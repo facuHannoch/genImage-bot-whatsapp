@@ -1,4 +1,5 @@
 "use strict";
+// @ts-nocheck
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -38,10 +39,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const node_cache_1 = __importDefault(require("node-cache"));
 const readline_1 = __importDefault(require("readline"));
 const baileys_1 = __importStar(require("@whiskeysockets/baileys"));
-// import MAIN_LOGGER from '../src/Utils/logger'
 // import open from 'open'
 const fs_1 = __importDefault(require("fs"));
 const pino_1 = __importDefault(require("pino"));
+const handleConversations_1 = __importDefault(require("./handleConversations"));
 const logger = (0, pino_1.default)({ timestamp: () => `,"time":"${new Date().toJSON()}"` });
 logger.level = 'trace';
 const useStore = !process.argv.includes('--no-store');
@@ -62,46 +63,15 @@ store === null || store === void 0 ? void 0 : store.readFromFile('./baileys_stor
 setInterval(() => {
     store === null || store === void 0 ? void 0 : store.writeToFile('./baileys_store_multi.json');
 }, 10000);
-const startSock = () => __awaiter(void 0, void 0, void 0, function* () {
-    const { state, saveCreds } = yield (0, baileys_1.useMultiFileAuthState)('baileys_auth_info');
-    const sock = (0, baileys_1.default)({
-        // can provide additional config here
-        printQRInTerminal: true,
-        auth: state,
-        browser: baileys_1.Browsers.appropriate("")
-    });
-    // sock.ev.on ('creds.update', saveCreds)
-    sock.ev.on('connection.update', (update) => {
-        var _a, _b;
-        const { connection, lastDisconnect } = update;
-        if (connection === 'close') {
-            const shouldReconnect = ((_b = (_a = lastDisconnect === null || lastDisconnect === void 0 ? void 0 : lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_1.DisconnectReason.loggedOut;
-            console.log('connection closed due to ', lastDisconnect === null || lastDisconnect === void 0 ? void 0 : lastDisconnect.error, ', reconnecting ', shouldReconnect);
-            // reconnect if not logged out
-            if (shouldReconnect) {
-                startSock();
-            }
-        }
-        else if (connection === 'open') {
-            console.log('opened connection');
-        }
-    });
-    sock.ev.on('messages.upsert', (m) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(JSON.stringify(m, undefined, 2));
-        console.log('replying to', m.messages[0].key.remoteJid);
-        yield sock.sendMessage(m.messages[0].key.remoteJid, { text: 'Hello there!' });
-    }));
-    return sock;
-});
 // start a connection
-const startSock2 = () => __awaiter(void 0, void 0, void 0, function* () {
+const startSock = () => __awaiter(void 0, void 0, void 0, function* () {
     const { state, saveCreds } = yield (0, baileys_1.useMultiFileAuthState)('baileys_auth_info');
     // fetch latest version of WA Web
     const { version, isLatest } = yield (0, baileys_1.fetchLatestBaileysVersion)();
     console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`);
     const sock = (0, baileys_1.default)({
         version,
-        logger,
+        // logger,
         printQRInTerminal: !usePairingCode,
         mobile: useMobile,
         auth: {
@@ -204,6 +174,17 @@ const startSock2 = () => __awaiter(void 0, void 0, void 0, function* () {
         yield (0, baileys_1.delay)(2000);
         yield sock.sendPresenceUpdate('paused', jid);
         yield sock.sendMessage(jid, msg);
+        console.log("-----------------------------");
+        console.log("-----------------------------");
+        console.log("-----------------------------");
+        console.log("-----------------------------");
+        console.log("-----------------------------");
+        console.log("-----------------------------");
+        console.log("-----------------------------");
+        console.log("-----------------------------");
+        console.log("-----------------------------");
+        console.log("-----------------------------");
+        logger.warn(msg);
     });
     // the process function lets you process all events that just occurred
     // efficiently in a batch
@@ -255,6 +236,7 @@ const startSock2 = () => __awaiter(void 0, void 0, void 0, function* () {
                         console.log('replying to', msg.key.remoteJid);
                         yield sock.readMessages([msg.key]);
                         yield sendMessageWTyping({ text: 'Hello there!' }, msg.key.remoteJid);
+                        yield (0, handleConversations_1.default)(sock, msg);
                     }
                 }
             }
@@ -312,4 +294,4 @@ const startSock2 = () => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
 });
-exports.default = startSock2;
+exports.default = startSock;
