@@ -2,6 +2,24 @@ import { AnyMessageContent, WASocket, proto } from '@whiskeysockets/baileys';
 import { checkUserIsSubscribed, doSingleTextInference, putUserInferencesOnPool, unsubscribeUser } from './utils/utils';
 global.aboutToUnsub = false;
 
+const requestQueue = new Map();
+
+const processRequest = async (userId: string, requestData: string, socket: WASocket) => {
+    if (requestQueue.has(userId)) {
+        // Inform the user or handle the queue
+        socket.sendMessage(userId, { text: "Espera! se está haciendo tu imagen anterior" })
+        return;
+    }
+    requestQueue.set(userId, requestData);
+    await socket.sendMessage(userId, { text: "Generando imagen de " + requestData });
+    await socket.sendMessage(userId, { text: "Por favor espera un momento" });
+    await doSingleTextInference(userId, requestData)
+    setTimeout(() => {
+        requestQueue.delete(userId);
+    }, 4000);
+};
+
+
 const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) => {
     console.log("A new msg to be sent!!!!")
     // socket.sendMessage(msg.key.remoteJid!, { text: JSON.stringify(msg.key) });
@@ -19,10 +37,8 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             socket.sendMessage(msg.key.remoteJid!, { text: "¿Quieres cancelar la subscripción?" });
         } else {
             console.log("User is subscribed")
-            await socket.sendMessage(msg.key.remoteJid!, { text: "Generando imagen de " + msg.message.conversation });
-            socket.sendMessage(msg.key.remoteJid!, { text: "Por favor espera un momento" });
             // await putUserInferencesOnPool(msg.key.remoteJid!, msg.message.conversation);
-            await doSingleTextInference(msg.key.remoteJid!, msg.message.conversation)
+            await processRequest(msg.key.remoteJid!, msg.message.conversation, socket)
 
         }
     } else {

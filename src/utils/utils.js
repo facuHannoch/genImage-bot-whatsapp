@@ -103,7 +103,7 @@ const doSingleTextInference = (user, prompt) => __awaiter(void 0, void 0, void 0
                 console.log('No user found with the given phone number.');
             }
             const response = inferenceResponse.data;
-            triggerWebhookForSingleInference({ user, prompt, image: response.predictions[0] });
+            yield triggerWebhookForSingleInference({ user, prompt, image: response.predictions[0] });
         }
         else {
             console.log('Inference was not successful or the image data is missing.');

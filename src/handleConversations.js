@@ -11,6 +11,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("./utils/utils");
 global.aboutToUnsub = false;
+const requestQueue = new Map();
+const processRequest = (userId, requestData, socket) => __awaiter(void 0, void 0, void 0, function* () {
+    if (requestQueue.has(userId)) {
+        // Inform the user or handle the queue
+        socket.sendMessage(userId, { text: "Espera! se está haciendo tu imagen anterior" });
+        return;
+    }
+    requestQueue.set(userId, requestData);
+    yield socket.sendMessage(userId, { text: "Generando imagen de " + requestData });
+    yield socket.sendMessage(userId, { text: "Por favor espera un momento" });
+    yield (0, utils_1.doSingleTextInference)(userId, requestData);
+    setTimeout(() => {
+        requestQueue.delete(userId);
+    }, 4000);
+});
 const handleConversation = (socket, msg) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("A new msg to be sent!!!!");
     // socket.sendMessage(msg.key.remoteJid!, { text: JSON.stringify(msg.key) });
@@ -28,10 +43,8 @@ const handleConversation = (socket, msg) => __awaiter(void 0, void 0, void 0, fu
         }
         else {
             console.log("User is subscribed");
-            yield socket.sendMessage(msg.key.remoteJid, { text: "Generando imagen de " + msg.message.conversation });
-            socket.sendMessage(msg.key.remoteJid, { text: "Por favor espera un momento" });
             // await putUserInferencesOnPool(msg.key.remoteJid!, msg.message.conversation);
-            yield (0, utils_1.doSingleTextInference)(msg.key.remoteJid, msg.message.conversation);
+            yield processRequest(msg.key.remoteJid, msg.message.conversation, socket);
         }
     }
     else {
