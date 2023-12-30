@@ -4,7 +4,9 @@ import { MiscMessageGenerationOptions, AnyMessageContent, proto } from '@whiskey
 import axios from 'axios';
 import * as admin from 'firebase-admin';
 import FormData from 'form-data'
-
+// import fs from 'fs'
+import google from 'googleapis' // rm
+import { GoogleAuth } from 'google-auth-library';
 // const db = getFirestore();
 // const database = getDatabase();
 
@@ -67,14 +69,33 @@ const checkUserCanInfere = async (user: User): Promise<boolean> => {
  */
 const doSingleTextInference = async (user: User, prompt: String) => {
     try {
-        // Make the POST request to the Firebase Cloud Function
-        const url: string = 'http://127.0.0.1:5001/gen-image-1da8b/us-central1/makeIndividualTextPrompt'
-        const inferenceResponse = await axios.post(url, {
-            prompt: prompt,
-        });
+        const credentialFilename = "./serviceAccountKey.json";
+        //     const scopes = ["https://www.googleapis.com/auth/cloud-platform"];
 
+        //     const auth = new google.Auth.JWT({ keyFile: credentialFilename, scopes: scopes });
+        // const drive = google.drive({ version: "v3", auth });
+
+        // const credentials = JSON.parse(fs.readFileSync('credentials.json', 'utf8'));
+        // const token = (await admin.credential.cert(credentialFilename).getAccessToken())
+        const accessToken = await getAccessToken();
+
+        const headers = {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+        }
+
+        // Make the POST request to the Firebase Cloud Function
+        const url: string = 'https://makeindividualtextprompt-qbnmku2fiq-uc.a.run.app'
+        console.log(prompt)
+        const inferenceResponse = await axios.post(url, {
+            prompt: prompt
+        }, {
+            headers: headers  // Headers should be here
+        });
+        const content = await inferenceResponse.data
+        // const content = await inferenceResponse.json(); // inferenceResponse.data
         // Check if the response is successful and contains the image data
-        if (inferenceResponse.status === 200 && inferenceResponse.data) {
+        if (inferenceResponse.status === 200 && content) {
             // Construct the query to find the user document with the matching phone number
             const usersRef = global.db.collection('users');
             const snapshot = await usersRef.where('phoneNumber', '==', extractPhoneNumber(user)).get();
@@ -92,16 +113,16 @@ const doSingleTextInference = async (user: User, prompt: String) => {
             } else {
                 console.log('No user found with the given phone number.');
             }
-            const response: VertexAIResponse = inferenceResponse.data
+            const response: VertexAIResponse = content
 
             await triggerWebhookForSingleInference({ user, prompt, image: response.predictions[0] })
         } else {
+            console.log(inferenceResponse.status)
             console.log('Inference was not successful or the image data is missing.');
         }
     } catch (error) {
         console.error('An error occurred during the inference or Firestore update:', error);
     }
-
 }
 
 // const response = await fetch('https://us-central1-gen-image-1da8b.cloudfunctions.net/doSingleTextInference', {
@@ -207,3 +228,13 @@ const triggerWebhookForSingleInference = async (inference) => {
         console.error('Error triggering webhook:', error);
     }
 };
+
+async function getAccessToken() {
+    const auth = new GoogleAuth({
+        keyFilename: './gen-image-1da8b-1c7ec3e2c812.json',
+        scopes: 'https://www.googleapis.com/auth/cloud-platform',
+    });
+
+    const accessToken = await auth.getAccessToken();
+    return accessToken;
+}

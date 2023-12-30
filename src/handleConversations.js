@@ -14,37 +14,43 @@ global.aboutToUnsub = false;
 const requestQueue = new Map();
 const processRequest = (userId, requestData, socket) => __awaiter(void 0, void 0, void 0, function* () {
     if (requestQueue.has(userId)) {
-        // Inform the user or handle the queue
         socket.sendMessage(userId, { text: "Espera! se está haciendo tu imagen anterior" });
         return;
     }
     requestQueue.set(userId, requestData);
     yield socket.sendMessage(userId, { text: "Generando imagen de " + requestData });
     yield socket.sendMessage(userId, { text: "Por favor espera un momento" });
-    yield (0, utils_1.doSingleTextInference)(userId, requestData);
+    try {
+        yield (0, utils_1.doSingleTextInference)(userId, requestData);
+    }
+    catch (error) {
+        yield socket.sendMessage(userId, { text: "Disculpa, hubo un error" });
+    }
     setTimeout(() => {
         requestQueue.delete(userId);
     }, 4000);
 });
 const handleConversation = (socket, msg) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("A new msg to be sent!!!!");
-    // socket.sendMessage(msg.key.remoteJid!, { text: JSON.stringify(msg.key) });
     const isSubscribed = yield (0, utils_1.checkUserIsSubscribed)(msg.key.remoteJid);
-    if (global.aboutToUnsub && msg.message.conversation === "si") {
+    console.log(`'${msg.message.conversation}- '`);
+    const text = msg.message.conversation !== '' ? msg.message.conversation : msg.message.extendedTextMessage.text;
+    if (global.aboutToUnsub && text === "si") {
         global.aboutToUnsub = false;
         (0, utils_1.unsubscribeUser)(msg.key.remoteJid);
         socket.sendMessage(msg.key.remoteJid, { text: "Subscripción cancelada" });
         return;
     }
     if (isSubscribed) {
-        if (msg.message.conversation === "-unsubscribe") {
+        if (text === "-unsubscribe") {
             global.aboutToUnsub = true;
             socket.sendMessage(msg.key.remoteJid, { text: "¿Quieres cancelar la subscripción?" });
         }
         else {
             console.log("User is subscribed");
-            // await putUserInferencesOnPool(msg.key.remoteJid!, msg.message.conversation);
-            yield processRequest(msg.key.remoteJid, msg.message.conversation, socket);
+            console.log(text !== null && text !== void 0 ? text : msg.message.extendedTextMessage.text);
+            console.log(msg.message);
+            // await putUserInferencesOnPool(msg.key.remoteJid!, text);
+            yield processRequest(msg.key.remoteJid, text, socket);
         }
     }
     else {

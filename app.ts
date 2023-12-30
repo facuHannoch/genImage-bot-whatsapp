@@ -52,7 +52,7 @@ const unlinkAsync = promisify(fs.unlink);
 app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
     try {
         const inferences = JSON.parse(req.body.inferences);
-        console.log('List of inferences:', inferences);
+        // console.log('List of inferences:', inferences);
 
         for (const inference of inferences) {
             const buffer = Buffer.from(inference.image, 'base64');

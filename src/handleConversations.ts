@@ -6,14 +6,17 @@ const requestQueue = new Map();
 
 const processRequest = async (userId: string, requestData: string, socket: WASocket) => {
     if (requestQueue.has(userId)) {
-        // Inform the user or handle the queue
         socket.sendMessage(userId, { text: "Espera! se está haciendo tu imagen anterior" })
         return;
     }
     requestQueue.set(userId, requestData);
     await socket.sendMessage(userId, { text: "Generando imagen de " + requestData });
     await socket.sendMessage(userId, { text: "Por favor espera un momento" });
-    await doSingleTextInference(userId, requestData)
+    try {
+        await doSingleTextInference(userId, requestData)
+    } catch (error) {
+        await socket.sendMessage(userId, { text: "Disculpa, hubo un error" });
+    }
     setTimeout(() => {
         requestQueue.delete(userId);
     }, 4000);
@@ -21,10 +24,10 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
 
 
 const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) => {
-    console.log("A new msg to be sent!!!!")
-    // socket.sendMessage(msg.key.remoteJid!, { text: JSON.stringify(msg.key) });
     const isSubscribed = await checkUserIsSubscribed(msg.key.remoteJid!);
-    if (global.aboutToUnsub && msg.message.conversation === "si") {
+    console.log(`'${msg.message.conversation}- '`)
+    const text: string = msg.message.conversation !== '' ? msg.message.conversation : msg.message.extendedTextMessage.text
+    if (global.aboutToUnsub && text === "si") {
         global.aboutToUnsub = false;
         unsubscribeUser(msg.key.remoteJid!);
         socket.sendMessage(msg.key.remoteJid!, { text: "Subscripción cancelada" });
@@ -32,13 +35,15 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     }
 
     if (isSubscribed) {
-        if (msg.message.conversation === "-unsubscribe") {
+        if (text === "-unsubscribe") {
             global.aboutToUnsub = true
             socket.sendMessage(msg.key.remoteJid!, { text: "¿Quieres cancelar la subscripción?" });
         } else {
             console.log("User is subscribed")
-            // await putUserInferencesOnPool(msg.key.remoteJid!, msg.message.conversation);
-            await processRequest(msg.key.remoteJid!, msg.message.conversation, socket)
+            console.log(text ?? msg.message.extendedTextMessage.text)
+            console.log(msg.message)
+            // await putUserInferencesOnPool(msg.key.remoteJid!, text);
+            await processRequest(msg.key.remoteJid!, text, socket)
 
         }
     } else {

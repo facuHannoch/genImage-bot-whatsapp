@@ -50,7 +50,7 @@ const unlinkAsync = (0, util_1.promisify)(fs_1.default.unlink);
 app.post('/batch-processing-done', upload.single('image'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const inferences = JSON.parse(req.body.inferences);
-        console.log('List of inferences:', inferences);
+        // console.log('List of inferences:', inferences);
         for (const inference of inferences) {
             const buffer = Buffer.from(inference.image, 'base64');
             const filename = path_1.default.join(__dirname, `tempImage-${Date.now()}.jpg`); // Unique filename for each image

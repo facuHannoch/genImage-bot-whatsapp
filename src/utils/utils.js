@@ -39,6 +39,7 @@ exports.doSingleTextInference = exports.unsubscribeUser = exports.subscribeUser 
 const axios_1 = __importDefault(require("axios"));
 const admin = __importStar(require("firebase-admin"));
 const form_data_1 = __importDefault(require("form-data"));
+const google_auth_library_1 = require("google-auth-library");
 /** Checks whether a certain user exists or not in the Firebase Firestore db, and if it has the attribute subscribe to other than 'free' or 'unsubscribed' (returns false if the attribute is set to 'free' or 'unsubscribed') */
 const checkUserIsSubscribed = (user) => __awaiter(void 0, void 0, void 0, function* () {
     const userDoc = yield getUserFromPhoneNumber(user);
@@ -80,13 +81,29 @@ const checkUserCanInfere = (user) => __awaiter(void 0, void 0, void 0, function*
  */
 const doSingleTextInference = (user, prompt) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const credentialFilename = "./serviceAccountKey.json";
+        //     const scopes = ["https://www.googleapis.com/auth/cloud-platform"];
+        //     const auth = new google.Auth.JWT({ keyFile: credentialFilename, scopes: scopes });
+        // const drive = google.drive({ version: "v3", auth });
+        // const credentials = JSON.parse(fs.readFileSync('credentials.json', 'utf8'));
+        // const token = (await admin.credential.cert(credentialFilename).getAccessToken())
+        const accessToken = yield getAccessToken();
+        const headers = {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+        };
         // Make the POST request to the Firebase Cloud Function
-        const url = 'http://127.0.0.1:5001/gen-image-1da8b/us-central1/makeIndividualTextPrompt';
+        const url = 'https://makeindividualtextprompt-qbnmku2fiq-uc.a.run.app';
+        console.log(prompt);
         const inferenceResponse = yield axios_1.default.post(url, {
-            prompt: prompt,
+            prompt: prompt
+        }, {
+            headers: headers // Headers should be here
         });
+        const content = yield inferenceResponse.data;
+        // const content = await inferenceResponse.json(); // inferenceResponse.data
         // Check if the response is successful and contains the image data
-        if (inferenceResponse.status === 200 && inferenceResponse.data) {
+        if (inferenceResponse.status === 200 && content) {
             // Construct the query to find the user document with the matching phone number
             const usersRef = global.db.collection('users');
             const snapshot = yield usersRef.where('phoneNumber', '==', extractPhoneNumber(user)).get();
@@ -102,10 +119,11 @@ const doSingleTextInference = (user, prompt) => __awaiter(void 0, void 0, void 0
             else {
                 console.log('No user found with the given phone number.');
             }
-            const response = inferenceResponse.data;
+            const response = content;
             yield triggerWebhookForSingleInference({ user, prompt, image: response.predictions[0] });
         }
         else {
+            console.log(inferenceResponse.status);
             console.log('Inference was not successful or the image data is missing.');
         }
     }
@@ -211,3 +229,13 @@ const triggerWebhookForSingleInference = (inference) => __awaiter(void 0, void 0
         console.error('Error triggering webhook:', error);
     }
 });
+function getAccessToken() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const auth = new google_auth_library_1.GoogleAuth({
+            keyFilename: './gen-image-1da8b-1c7ec3e2c812.json',
+            scopes: 'https://www.googleapis.com/auth/cloud-platform',
+        });
+        const accessToken = yield auth.getAccessToken();
+        return accessToken;
+    });
+}
