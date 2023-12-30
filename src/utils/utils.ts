@@ -69,7 +69,7 @@ const checkUserCanInfere = async (user: User): Promise<boolean> => {
  */
 const doSingleTextInference = async (user: User, prompt: String) => {
     try {
-        const credentialFilename = "./serviceAccountKey.json";
+        // const credentialFilename = "./serviceAccountKey.json";
         //     const scopes = ["https://www.googleapis.com/auth/cloud-platform"];
 
         //     const auth = new google.Auth.JWT({ keyFile: credentialFilename, scopes: scopes });
@@ -125,19 +125,6 @@ const doSingleTextInference = async (user: User, prompt: String) => {
     }
 }
 
-// const response = await fetch('https://us-central1-gen-image-1da8b.cloudfunctions.net/doSingleTextInference', {
-//     method: 'POST',
-//     headers: {
-//         'Content-Type': 'application/json'
-//     },
-//     body: JSON.stringify({ user, prompt })
-// });
-// const data = await response.json();
-// if (data.success) {
-//     const userRef = global.db.collection("users").doc(user);
-//     await userRef.update({ countImagesGenerated: admin.firestore.FieldValue.increment(1) });
-// }
-// return data;
 /**
  * Put the user inference, along with the phone number data into the Firebase Realtime Database, to be batch processed later along with other inference requests
  * @param user 
@@ -231,7 +218,7 @@ const triggerWebhookForSingleInference = async (inference) => {
 
 async function getAccessToken() {
     const auth = new GoogleAuth({
-        keyFilename: './gen-image-1da8b-1c7ec3e2c812.json',
+        keyFilename: './serviceAccountKey.json',
         scopes: 'https://www.googleapis.com/auth/cloud-platform',
     });
 

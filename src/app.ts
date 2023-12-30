@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
-import startSock from './src/startBot';
+import startSock from './bot/startBot';
 import { AnyMessageContent, AnyRegularMessageContent, PollMessageOptions, WASocket, proto } from '@whiskeysockets/baileys';
 import { FirebaseOptions, initializeApp } from "firebase/app";
-import { Inference, subscribeUser } from './src/utils/utils';
+import { Inference, subscribeUser } from './utils/utils';
 import multer from 'multer';
 
 import fs from 'fs';
@@ -17,11 +17,11 @@ const initBot = async () => {
 
 // Firebase Condfig
 import admin from 'firebase-admin';
-var serviceAccount = require("./serviceAccountKey.json");
+var serviceAccount = require("../serviceAccountKey.json");
 
-const firebaseConfig: FirebaseOptions = {
-    projectId: 'gen-image-1da8b',
-};
+// const firebaseConfig: FirebaseOptions = {
+//     projectId: 'gen-image-1da8b',
+// };
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -60,12 +60,9 @@ app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
 
             await writeFileAsync(filename, buffer);
 
-            // Send a text message
-            await sock.sendMessage(inference.user, { text: "Your image has been processed!" });
-
-            // Send the image
-            // Replace with the actual method to send an image via your WhatsApp API
-            await sock.sendMessage(inference.user, { image: { url: filename } });
+            sock.sendMessage(inference.user, { image: { url: filename } });
+            // sock.sendMessage(inference.user, { sticker: { url: filename } });
+            await sock.sendMessage(inference.user, { text: "Tu imagen ha sido procesada!" });
 
             // Optionally delete the image file after sending
             await unlinkAsync(filename);
@@ -79,13 +76,13 @@ app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
 });
 
 app.post('/payment-received', async (req, res) => {
-    console.log(req.body)
+    // console.log(req.body)
     const data = (req.body)
     console.log('Payment received:', data);
     const subscriptionType: string = data.subscriptionType ?? 'bot-trial';
     const jid: string = `${data.user}@s.whatsapp.net`
     subscribeUser(jid, subscriptionType);
-    sock.sendMessage(jid, { text: "Felicidades! Ya puedes empezar a generar imágenes"})
+    sock.sendMessage(jid, { text: "Felicidades! Ya puedes empezar a generar imágenes" })
     res.sendStatus(200);
 });
 

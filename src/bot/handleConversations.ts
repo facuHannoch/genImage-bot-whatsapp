@@ -1,5 +1,5 @@
 import { AnyMessageContent, WASocket, proto } from '@whiskeysockets/baileys';
-import { checkUserIsSubscribed, doSingleTextInference, putUserInferencesOnPool, unsubscribeUser } from './utils/utils';
+import { checkUserIsSubscribed, doSingleTextInference, putUserInferencesOnPool, unsubscribeUser } from '../utils/utils';
 global.aboutToUnsub = false;
 
 const requestQueue = new Map();
@@ -25,8 +25,12 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
 
 const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) => {
     const isSubscribed = await checkUserIsSubscribed(msg.key.remoteJid!);
-    console.log(`'${msg.message.conversation}- '`)
-    const text: string = msg.message.conversation !== '' ? msg.message.conversation : msg.message.extendedTextMessage.text
+    // console.log(msg)
+    if (msg.message.extendedTextMessage == null) {
+        socket.sendMessage(msg.key.remoteJid!, { text: "Por ahora sólo podemos convertir texto en imágenes" });
+        return
+    }
+    const text: string = msg.message.conversation !== '' ? msg.message.conversation : msg.message.extendedTextMessage?.text
     if (global.aboutToUnsub && text === "si") {
         global.aboutToUnsub = false;
         unsubscribeUser(msg.key.remoteJid!);
@@ -39,30 +43,17 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             global.aboutToUnsub = true
             socket.sendMessage(msg.key.remoteJid!, { text: "¿Quieres cancelar la subscripción?" });
         } else {
-            console.log("User is subscribed")
-            console.log(text ?? msg.message.extendedTextMessage.text)
-            console.log(msg.message)
+            // console.log("User is subscribed")
+            // console.log(text ?? msg.message.extendedTextMessage.text)
+            // console.log(msg.message)
             // await putUserInferencesOnPool(msg.key.remoteJid!, text);
             await processRequest(msg.key.remoteJid!, text, socket)
-
         }
     } else {
-        console.log("User is not subscribed")
         await socket.sendMessage(msg.key.remoteJid!, { text: "Hola! parece que no estás subscripto" });
         // socket.sendMessage(msg.key.remoteJid!, { image: { url: "src/media/img.jpg" } });
         await socket.sendMessage(msg.key.remoteJid!, { text: "Ofrecemos un período de muy bajo costo, con el que puedes crear más de 500 imágenes libres de derechos de autor." });
         await socket.sendMessage(msg.key.remoteJid!, { text: "https://www.mercadopago.com.ar/cuenta" });
-        // socket.sendMessage(msg.key.remoteJid!, {
-        //     buttons: [
-        //         {
-        //             buttonId: 'id1',
-        //             buttonText: { displayText: 'Subscribe' },
-        //             type: 1
-        //         },
-        //     ],
-        //     // headerType: 1,
-        //     text: "¿Quieres suscribirte?"
-        // });
     }
 }
 

@@ -5,7 +5,6 @@ import { Boom } from '@hapi/boom'
 import NodeCache from 'node-cache'
 import readline from 'readline'
 import makeWASocket, { AnyMessageContent, delay, DisconnectReason, fetchLatestBaileysVersion, getAggregateVotesInPollMessage, makeCacheableSignalKeyStore, makeInMemoryStore, PHONENUMBER_MCC, proto, useMultiFileAuthState, WAMessageContent, WAMessageKey } from '@whiskeysockets/baileys'
-import MAIN_LOGGER from './logger'
 // import open from 'open'
 import fs from 'fs'
 import P from 'pino'
@@ -228,21 +227,19 @@ const startSock = async () => {
 
             // messages updated like status delivered, message deleted etc.
             if (events['messages.update']) {
-                console.log(
-                    JSON.stringify(events['messages.update'], undefined, 2)
-                )
+                // console.log(JSON.stringify(events['messages.update'], undefined, 2))
 
                 for (const { key, update } of events['messages.update']) {
                     if (update.pollUpdates) {
                         const pollCreation = await getMessage(key)
                         if (pollCreation) {
-                            console.log(
-                                'got poll update, aggregation: ',
-                                getAggregateVotesInPollMessage({
-                                    message: pollCreation,
-                                    pollUpdates: update.pollUpdates,
-                                })
-                            )
+                            // console.log(
+                            //     'got poll update, aggregation: ',
+                            //     getAggregateVotesInPollMessage({
+                            //         message: pollCreation,
+                            //         pollUpdates: update.pollUpdates,
+                            //     })
+                            // )
                         }
                     }
                 }
@@ -270,9 +267,7 @@ const startSock = async () => {
                         const newUrl = contact.imgUrl === null
                             ? null
                             : await sock!.profilePictureUrl(contact.id!).catch(() => null)
-                        console.log(
-                            `contact ${contact.id} has a new profile pic: ${newUrl}`,
-                        )
+                        // console.log(`contact ${contact.id} has a new profile pic: ${newUrl}`)
                     }
                 }
             }
