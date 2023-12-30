@@ -26,11 +26,11 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
 const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) => {
     const isSubscribed = await checkUserIsSubscribed(msg.key.remoteJid!);
     // console.log(msg)
-    if (msg.message.extendedTextMessage == null) {
+    const text: string | undefined | null = msg.message.conversation !== '' ? msg.message.conversation : msg.message.extendedTextMessage?.text
+    if (!text) {
         socket.sendMessage(msg.key.remoteJid!, { text: "Por ahora sólo podemos convertir texto en imágenes" });
         return
     }
-    const text: string = msg.message.conversation !== '' ? msg.message.conversation : msg.message.extendedTextMessage?.text
     if (global.aboutToUnsub && text === "si") {
         global.aboutToUnsub = false;
         unsubscribeUser(msg.key.remoteJid!);
