@@ -1,5 +1,6 @@
 // @ts-nocheck
 
+// (?<!// )// console.log(?=.*\))
 import { Boom } from '@hapi/boom'
 import NodeCache from 'node-cache'
 import readline from 'readline'
@@ -40,7 +41,7 @@ const startSock = async () => {
     const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info')
     // fetch latest version of WA Web
     const { version, isLatest } = await fetchLatestBaileysVersion()
-    console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
+    // console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
 
     const sock = makeWASocket({
         version,
@@ -71,7 +72,7 @@ const startSock = async () => {
 
         const phoneNumber = await question('Please enter your mobile phone number:\n')
         const code = await sock.requestPairingCode(phoneNumber)
-        console.log(`Pairing code: ${code}`)
+        // console.log(`Pairing code: ${code}`)
     }
 
     // If mobile was chosen, ask for the code
@@ -102,8 +103,8 @@ const startSock = async () => {
             try {
                 const code = await question('Please enter the one time code:\n')
                 const response = await sock.register(code.replace(/["']/g, '').trim().toLowerCase())
-                console.log('Successfully registered your phone number.')
-                console.log(response)
+                // console.log('Successfully registered your phone number.')
+                // console.log(response)
                 rl.close()
             } catch (error) {
                 console.error('Failed to register your phone number. Please try again.\n', error)
@@ -160,18 +161,6 @@ const startSock = async () => {
         await sock.sendPresenceUpdate('paused', jid)
 
         await sock.sendMessage(jid, msg)
-
-        console.log("-----------------------------")
-        console.log("-----------------------------")
-        console.log("-----------------------------")
-        console.log("-----------------------------")
-        console.log("-----------------------------")
-        console.log("-----------------------------")
-        console.log("-----------------------------")
-        console.log("-----------------------------")
-        console.log("-----------------------------")
-        console.log("-----------------------------")
-        logger.warn(msg)
     }
 
     // the process function lets you process all events that just occurred
@@ -189,11 +178,11 @@ const startSock = async () => {
                     if ((lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut) {
                         startSock()
                     } else {
-                        console.log('Connection closed. You are logged out.')
+                        // console.log('Connection closed. You are logged out.')
                     }
                 }
 
-                console.log('connection update', update)
+                // console.log('connection update', update)
             }
 
             // credentials updated -- save them
@@ -202,22 +191,22 @@ const startSock = async () => {
             }
 
             if (events['labels.association']) {
-                console.log(events['labels.association'])
+                // console.log(events['labels.association'])
             }
 
 
             if (events['labels.edit']) {
-                console.log(events['labels.edit'])
+                // console.log(events['labels.edit'])
             }
 
             if (events.call) {
-                console.log('recv call event', events.call)
+                // console.log('recv call event', events.call)
             }
 
             // history received
             if (events['messaging-history.set']) {
                 const { chats, contacts, messages, isLatest } = events['messaging-history.set']
-                console.log(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest})`)
+                // console.log(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest})`)
             }
 
             // received a new message
@@ -260,19 +249,19 @@ const startSock = async () => {
             }
 
             if (events['message-receipt.update']) {
-                console.log(events['message-receipt.update'])
+                // console.log(events['message-receipt.update'])
             }
 
             if (events['messages.reaction']) {
-                console.log(events['messages.reaction'])
+                // console.log(events['messages.reaction'])
             }
 
             if (events['presence.update']) {
-                console.log(events['presence.update'])
+                // console.log(events['presence.update'])
             }
 
             if (events['chats.update']) {
-                console.log(events['chats.update'])
+                // console.log(events['chats.update'])
             }
 
             if (events['contacts.update']) {
@@ -289,7 +278,7 @@ const startSock = async () => {
             }
 
             if (events['chats.delete']) {
-                console.log('chats deleted ', events['chats.delete'])
+                // console.log('chats deleted ', events['chats.delete'])
             }
         }
     )

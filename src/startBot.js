@@ -68,7 +68,7 @@ const startSock = () => __awaiter(void 0, void 0, void 0, function* () {
     const { state, saveCreds } = yield (0, baileys_1.useMultiFileAuthState)('baileys_auth_info');
     // fetch latest version of WA Web
     const { version, isLatest } = yield (0, baileys_1.fetchLatestBaileysVersion)();
-    console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`);
+    // console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
     const sock = (0, baileys_1.default)({
         version,
         // logger,
@@ -95,7 +95,7 @@ const startSock = () => __awaiter(void 0, void 0, void 0, function* () {
         }
         const phoneNumber = yield question('Please enter your mobile phone number:\n');
         const code = yield sock.requestPairingCode(phoneNumber);
-        console.log(`Pairing code: ${code}`);
+        // console.log(`Pairing code: ${code}`)
     }
     // If mobile was chosen, ask for the code
     if (useMobile && !sock.authState.creds.registered) {
@@ -121,8 +121,8 @@ const startSock = () => __awaiter(void 0, void 0, void 0, function* () {
                 try {
                     const code = yield question('Please enter the one time code:\n');
                     const response = yield sock.register(code.replace(/["']/g, '').trim().toLowerCase());
-                    console.log('Successfully registered your phone number.');
-                    console.log(response);
+                    // console.log('Successfully registered your phone number.')
+                    // console.log(response)
                     rl.close();
                 }
                 catch (error) {
@@ -174,17 +174,6 @@ const startSock = () => __awaiter(void 0, void 0, void 0, function* () {
         yield (0, baileys_1.delay)(2000);
         yield sock.sendPresenceUpdate('paused', jid);
         yield sock.sendMessage(jid, msg);
-        console.log("-----------------------------");
-        console.log("-----------------------------");
-        console.log("-----------------------------");
-        console.log("-----------------------------");
-        console.log("-----------------------------");
-        console.log("-----------------------------");
-        console.log("-----------------------------");
-        console.log("-----------------------------");
-        console.log("-----------------------------");
-        console.log("-----------------------------");
-        logger.warn(msg);
     });
     // the process function lets you process all events that just occurred
     // efficiently in a batch
@@ -203,28 +192,28 @@ const startSock = () => __awaiter(void 0, void 0, void 0, function* () {
                     startSock();
                 }
                 else {
-                    console.log('Connection closed. You are logged out.');
+                    // console.log('Connection closed. You are logged out.')
                 }
             }
-            console.log('connection update', update);
+            // console.log('connection update', update)
         }
         // credentials updated -- save them
         if (events['creds.update']) {
             yield saveCreds();
         }
         if (events['labels.association']) {
-            console.log(events['labels.association']);
+            // console.log(events['labels.association'])
         }
         if (events['labels.edit']) {
-            console.log(events['labels.edit']);
+            // console.log(events['labels.edit'])
         }
         if (events.call) {
-            console.log('recv call event', events.call);
+            // console.log('recv call event', events.call)
         }
         // history received
         if (events['messaging-history.set']) {
             const { chats, contacts, messages, isLatest } = events['messaging-history.set'];
-            console.log(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest})`);
+            // console.log(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest})`)
         }
         // received a new message
         if (events['messages.upsert']) {
@@ -257,16 +246,16 @@ const startSock = () => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
         if (events['message-receipt.update']) {
-            console.log(events['message-receipt.update']);
+            // console.log(events['message-receipt.update'])
         }
         if (events['messages.reaction']) {
-            console.log(events['messages.reaction']);
+            // console.log(events['messages.reaction'])
         }
         if (events['presence.update']) {
-            console.log(events['presence.update']);
+            // console.log(events['presence.update'])
         }
         if (events['chats.update']) {
-            console.log(events['chats.update']);
+            // console.log(events['chats.update'])
         }
         if (events['contacts.update']) {
             for (const contact of events['contacts.update']) {
@@ -279,7 +268,7 @@ const startSock = () => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
         if (events['chats.delete']) {
-            console.log('chats deleted ', events['chats.delete']);
+            // console.log('chats deleted ', events['chats.delete'])
         }
     }));
     return sock;

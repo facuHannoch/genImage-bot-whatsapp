@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const startBot_1 = __importDefault(require("./src/startBot"));
-const app_1 = require("firebase/app");
+const utils_1 = require("./src/utils/utils");
 const multer_1 = __importDefault(require("multer"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -32,9 +32,9 @@ const firebaseConfig = {
 };
 firebase_admin_1.default.initializeApp({
     credential: firebase_admin_1.default.credential.cert(serviceAccount),
-    databaseURL: "https://gen-image-1da8b-default-rtdb.firebaseio.com"
+    databaseURL: "https://gen-image-1da8b-default-rtdb.firebaseio.com",
 });
-global.firebaseApp = (0, app_1.initializeApp)(firebaseConfig);
+// global.firebaseApp = initializeApp(firebaseConfig);
 const db = firebase_admin_1.default.firestore();
 const database = firebase_admin_1.default.database();
 global.db = db;
@@ -70,73 +70,15 @@ app.post('/batch-processing-done', upload.single('image'), (req, res) => __await
         res.status(500).send('Internal Server Error');
     }
 }));
-// app.post('/batch-processing-done', upload.single('image'), async (req: Request, res: Response) => {
-//     const inferences: Inference[] = JSON.parse(req.body.inferences);
-//     fs.writeFile(filename, buffer, (err) => {
-//         if (err) reject(err);
-//         else resolve(filename);
-//     });
-//     // here we get a list of Inference, and send the image that corresponds to each user. The data comes in base64 formar
-//     // const listInferences: Inference[] = data.inferences;
-//     console.log('List of inferences:', inferences);
-//     inferences?.forEach((inference: Inference) => {
-//         fs.writeFile(filename, buffer, (err) => {
-//             if (err) reject(err);
-//             else resolve(filename);
-//         });
-//         sock.sendMessage(inference.user, { text: "Your image has been processed!" })
-//         sock.sendMessage(inference.user, { image: { buffer: Buffer.from(inference.image, 'base64') } })
-//     })
-//     res.sendStatus(200);
-// })
-// Webhook endpoint
-app.post('/firebase-update', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = req.body;
-    console.log('Received data from Firebase:', data);
-    // Process the data...
-    const s = {
-        buttonId: "A button",
-        buttonText: {
-            displayText: "A nice button"
-        },
-    };
-    sock.sendMessage("5491156928198@s.whatsapp.net", { text: "We are getting data from firebase..." });
-    // Step 1: Define the button
-    let button = {
-        buttonId: 'unique-button-id',
-        buttonText: {
-            displayText: 'Button Text'
-        },
-        type: 1 // The type of the button, e.g., response button
-    };
-    // Step 2: Construct a message content with the button
-    let messageContent = {
-        text: 'Your message text here',
-        buttons: [button] // Add the button here
-        // Other properties like contextInfo, mentions, etc., can be added as needed
-    };
-    // Step 4: Send the Message
-    // Replace 'recipient-jid', messageContent, and options with actual values
-    sock.sendMessage("5491156928198@s.whatsapp.net", messageContent)
-        .then(response => {
-        console.log('Message sent', response);
-    })
-        .catch(error => {
-        console.error('Error sending message', error);
-    });
-    // sock.sendMessage("5491156928198@s.whatsapp.net", {
-    //     poll: {
-    //         name: "What is your favorite color?",
-    //         values: [
-    //             "Red",
-    //             "Green",
-    //             "Blue"
-    //         ],
-    //         // openEnded: false
-    //     }
-    // })
-    // sock.sendMessage("5491156928198@s.whatsapp.net", { buttons: [{ buttonId: 'id1', buttonText: { displayText: 'Button 1' }, type: 1 }], footerText: 'Hello World!', templateButtons: [{ index: 1, urlButton: { displayText: 'Link Button', url: 'https://google.com' } }], type: 'buttons' })
-    // sock.sendMessage("5491156928198@s.whatsapp.net", { image: { url: "src/media/img.jpg" } });
+app.post('/payment-received', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    console.log(req.body);
+    const data = (req.body);
+    console.log('Payment received:', data);
+    const subscriptionType = (_a = data.subscriptionType) !== null && _a !== void 0 ? _a : 'bot-trial';
+    const jid = `${data.user}@s.whatsapp.net`;
+    (0, utils_1.subscribeUser)(jid, subscriptionType);
+    sock.sendMessage(jid, { text: "Felicidades! Ya puedes empezar a generar imágenes" });
     res.sendStatus(200);
 }));
 const PORT = 3000;
