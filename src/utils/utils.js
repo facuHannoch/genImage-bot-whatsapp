@@ -10,31 +10,43 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.unsubscribeUser = exports.subscribeUser = exports.distributeBatchInferences = exports.putUserInferencesOnPool = exports.checkUserIsSubscribed = void 0;
-const firestore_1 = require("firebase/firestore");
-const database_1 = require("firebase/database");
 /** Checks whether a certain user exists or not in the Firebase Firestore db, and if it has the attribute subscribe to other than 'free' or 'unsubscribed' (returns false if the attribute is set to 'free' or 'unsubscribed') */
 const checkUserIsSubscribed = (user) => __awaiter(void 0, void 0, void 0, function* () {
-    const userRef = (0, firestore_1.doc)(global.db, "users", user);
-    return (0, firestore_1.getDoc)(userRef).then((doc) => {
-        if (!doc.exists) {
-            return false;
-        }
-        const data = doc.data();
-        return (data === null || data === void 0 ? void 0 : data.subscription) !== 'free' && (data === null || data === void 0 ? void 0 : data.subscription) !== 'unsubscribed';
-    }).catch((error) => {
-        console.log('Error getting document:', error);
+    const userRef = global.db.collection("users").doc(user);
+    const doc = yield userRef.get();
+    if (!doc.exists) {
         return false;
-    });
+    }
+    const data = doc.data();
+    return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
 });
 exports.checkUserIsSubscribed = checkUserIsSubscribed;
+/** Checks whether a certain user exists or not in the Firebase Firestore db, and if it has the attribute subscribe to other than 'free' or 'unsubscribed' (returns false if the attribute is set to 'free' or 'unsubscribed') */
+const checkUserCanInfere = (user) => __awaiter(void 0, void 0, void 0, function* () {
+    const userRef = global.db.collection("users").doc(user);
+    const doc = yield userRef.get();
+    if (!doc.exists) {
+        return false;
+    }
+    const data = doc.data();
+    return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
+});
 /**
  * Put the user inference, along with the phone number data into the Firebase Realtime Database, to be batch processed later along with other inference requests
  * @param user
  * @param prompt
  */
 const putUserInferencesOnPool = (user, prompt) => __awaiter(void 0, void 0, void 0, function* () {
-    const inferencesRef = (0, database_1.ref)(global.database, 'inferences');
-    yield (0, database_1.push)(inferencesRef, { user, prompt });
+    const userRef = global.database.ref('inferences/pool').push();
+    yield userRef.set({
+        user,
+        prompt,
+    });
+    // const userRef = ref(global.database, 'inferences/pool');
+    // await push(userRef, {
+    //     user,
+    //     prompt,
+    // });
 });
 exports.putUserInferencesOnPool = putUserInferencesOnPool;
 /**
@@ -54,8 +66,8 @@ exports.distributeBatchInferences = distributeBatchInferences;
  * @param user
  */
 const subscribeUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
-    const userRef = (0, firestore_1.doc)(global.db, "users", user);
-    yield (0, firestore_1.setDoc)(userRef, { subscription: 'bot-trial' }, { merge: true });
+    const userRef = global.db.collection("users").doc(user);
+    yield userRef.set({ subscription: 'bot-trial' }, { merge: true });
 });
 exports.subscribeUser = subscribeUser;
 /**
@@ -63,7 +75,7 @@ exports.subscribeUser = subscribeUser;
  * @param user
  */
 const unsubscribeUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
-    const userRef = (0, firestore_1.doc)(global.db, "users", user);
-    yield (0, firestore_1.updateDoc)(userRef, { subscription: 'unsubscribed' });
+    const userRef = global.db.collection("users").doc(user);
+    yield userRef.set({ subscription: 'unsubscribed' }, { merge: true });
 });
 exports.unsubscribeUser = unsubscribeUser;

@@ -1,5 +1,5 @@
-import { getFirestore, doc, getDoc, updateDoc, setDoc, Firestore } from "firebase/firestore";
-import { getDatabase, ref, push, Database } from "firebase/database";
+// import { getFirestore, doc, getDoc, updateDoc, setDoc, Firestore } from "firebase/firestore";
+// import { getDatabase, ref, push, Database } from "firebase/database";
 import { MiscMessageGenerationOptions, AnyMessageContent, proto } from '@whiskeysockets/baileys';
 
 // const db = getFirestore();
@@ -7,25 +7,31 @@ import { MiscMessageGenerationOptions, AnyMessageContent, proto } from '@whiskey
 
 type SendMessage = (jid: string, content: AnyMessageContent, options?: MiscMessageGenerationOptions) => Promise<proto.WebMessageInfo>
 type User = string
-interface Inference {
+export interface Inference {
     user: User,
     prompt: string,
     image: string,
 }
 /** Checks whether a certain user exists or not in the Firebase Firestore db, and if it has the attribute subscribe to other than 'free' or 'unsubscribed' (returns false if the attribute is set to 'free' or 'unsubscribed') */
 const checkUserIsSubscribed = async (user: User): Promise<boolean> => {
-    const userRef = doc(global.db, "users", user);
-    return getDoc(userRef).then((doc) => {
-        if (!doc.exists) {
-            return false
-        }
-        const data = doc.data()
-        return data?.subscription !== 'free' && data?.subscription !== 'unsubscribed'
-    }).catch((error) => {
-        console.log('Error getting document:', error)
-        return false
-    })
+    const userRef = global.db.collection("users").doc(user);
+    const doc = await userRef.get();
+    if (!doc.exists) {
+        return false;
+    }
+    const data = doc.data();
+    return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
+}
 
+/** Checks whether a certain user exists or not in the Firebase Firestore db, and if it has the attribute subscribe to other than 'free' or 'unsubscribed' (returns false if the attribute is set to 'free' or 'unsubscribed') */
+const checkUserCanInfere = async (user: User): Promise<boolean> => {
+    const userRef = global.db.collection("users").doc(user);
+    const doc = await userRef.get();
+    if (!doc.exists) {
+        return false;
+    }
+    const data = doc.data();
+    return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
 }
 
 /**
@@ -34,8 +40,16 @@ const checkUserIsSubscribed = async (user: User): Promise<boolean> => {
  * @param prompt 
  */
 const putUserInferencesOnPool = async (user: User, prompt: string) => {
-    const inferencesRef = ref(global.database, 'inferences');
-    await push(inferencesRef, { user, prompt });
+    const userRef = global.database.ref('inferences/pool').push();
+    await userRef.set({
+        user,
+        prompt,
+    });
+    // const userRef = ref(global.database, 'inferences/pool');
+    // await push(userRef, {
+    //     user,
+    //     prompt,
+    // });
 }
 
 /**
@@ -54,16 +68,17 @@ const distributeBatchInferences = (listInferences: Inference[], sendMessageFunct
  * @param user 
  */
 const subscribeUser = async (user: User) => {
-    const userRef = doc(global.db, "users", user);
-    await setDoc(userRef, { subscription: 'bot-trial' }, { merge: true });
+    const userRef = global.db.collection("users").doc(user);
+    await userRef.set({ subscription: 'bot-trial' }, { merge: true });
 }
 /**
  * Modifies the specific user details, changing the 'subscription' attribute to 'unsubscribed'
  * @param user 
  */
 const unsubscribeUser = async (user: User) => {
-    const userRef = doc(global.db, "users", user);
-    await updateDoc(userRef, { subscription: 'unsubscribed' });
+    const userRef = global.db.collection("users").doc(user);
+    await userRef.set({ subscription: 'unsubscribed' }, { merge: true });
+    
 }
 
 export { checkUserIsSubscribed, putUserInferencesOnPool, distributeBatchInferences, subscribeUser, unsubscribeUser }

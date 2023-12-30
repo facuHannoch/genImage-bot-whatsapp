@@ -229,13 +229,13 @@ const startSock = () => __awaiter(void 0, void 0, void 0, function* () {
         // received a new message
         if (events['messages.upsert']) {
             const upsert = events['messages.upsert'];
-            console.log('recv messages ', JSON.stringify(upsert, undefined, 2));
+            // console.log('recv messages ', JSON.stringify(upsert, undefined, 2))
             if (upsert.type === 'notify') {
                 for (const msg of upsert.messages) {
                     if (!msg.key.fromMe && doReplies) {
-                        console.log('replying to', msg.key.remoteJid);
+                        // console.log('replying to', msg.key.remoteJid)
                         yield sock.readMessages([msg.key]);
-                        yield sendMessageWTyping({ text: 'Hello there!' }, msg.key.remoteJid);
+                        // await sendMessageWTyping({ text: 'Hello there!' }, msg.key.remoteJid!)
                         yield (0, handleConversations_1.default)(sock, msg);
                     }
                 }

@@ -223,14 +223,14 @@ const startSock = async () => {
             // received a new message
             if (events['messages.upsert']) {
                 const upsert = events['messages.upsert']
-                console.log('recv messages ', JSON.stringify(upsert, undefined, 2))
+                // console.log('recv messages ', JSON.stringify(upsert, undefined, 2))
 
                 if (upsert.type === 'notify') {
                     for (const msg of upsert.messages) {
                         if (!msg.key.fromMe && doReplies) {
-                            console.log('replying to', msg.key.remoteJid)
+                            // console.log('replying to', msg.key.remoteJid)
                             await sock!.readMessages([msg.key])
-                            await sendMessageWTyping({ text: 'Hello there!' }, msg.key.remoteJid!)
+                            // await sendMessageWTyping({ text: 'Hello there!' }, msg.key.remoteJid!)
                             await handleConversation(sock, msg)
                         }
                     }
