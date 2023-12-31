@@ -209,9 +209,9 @@ const triggerWebhookForSingleInference = async (inference) => {
         // const response = await axios.post('http://localhost:3000/batch-processing-done', formData, {
         //     headers: formData.getHeaders(),
         // });
-        const response = await axios.post('http://localhost:3000/batch-processing-done', JSON.stringify([inference]))
-
-        console.log('Webhook triggered successfully:', response.status);
+        axios.post('http://localhost:3000/batch-processing-done', { inferences: [inference] })
+            .then(response => console.log('Webhook triggered successfully:', response.status))
+            .catch(error => console.error('Error triggering webhook:', error));
     } catch (error) {
         console.error('Error triggering webhook:', error);
     }
