@@ -35,7 +35,8 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
 const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) => {
     const userId: string = msg.key.remoteJid
     const isSubscribed = await checkUserIsSubscribed(userId);
-    const userState = userStates.get(userId) || { aboutToSubscribe: true, subscribed: isSubscribed }
+    let userState = userStates.get(userId) || { aboutToSubscribe: true, subscribed: isSubscribed }
+
     const text: string | undefined | null =
         msg.message.conversation !== ''
             ? msg.message.conversation
@@ -59,6 +60,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             userStates.set(userId, { subscribed: true })
         }
     }
+    userState = userStates.get(userId) || userState
 
     if (userState.subscribed) {
         if (text === "-unsubscribe") {

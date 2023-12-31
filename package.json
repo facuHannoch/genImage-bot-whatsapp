@@ -1,6 +1,6 @@
 {
   "name": "wp",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "main": "src/app.ts",
   "scripts": {
@@ -10,7 +10,7 @@
     "build": "tsc",
     "build:lib": "tsc",
     "run": "tsc && node dist/app.js",
-    "clean-auth": "rm -f baileys_store_multi.json && rm -rf baileys_auth_info",
+    "clean-auth": "sudo rm -f baileys_store_multi.json && sudo rm -rf baileys_auth_info",
     "clean-auth-windows": "del baileys_store_multi.json && rmdir baileys_auth_info"
 },
 "keywords": [],

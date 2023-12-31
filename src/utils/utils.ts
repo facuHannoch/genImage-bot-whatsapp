@@ -202,3 +202,27 @@ async function getAccessToken() {
     const accessToken = await auth.getAccessToken();
     return accessToken;
 }
+
+// function sendSingleImage() {
+
+//     try {
+//         const inferences = JSON.parse(req.body.inferences);
+//         // console.log('List of inferences:', inferences);
+
+//         for (const inference of inferences) {
+//             const buffer = Buffer.from(inference.image, 'base64');
+//             const filename = path.join(__dirname, `tempImage-${Date.now()}.jpg`); // Unique filename for each image
+
+//             await writeFileAsync(filename, buffer);
+
+//             sock.sendMessage(inference.user, { image: { url: filename } });
+//             // sock.sendMessage(inference.user, { sticker: { url: filename } });
+//             await sock.sendMessage(inference.user, { text: "Tu imagen ha sido procesada!" });
+
+//             // Optionally delete the image file after sending
+//             await unlinkAsync(filename);
+//         }
+//     } catch (error) {
+//         global.logger.error('Error:', error);
+//     }
+// }
