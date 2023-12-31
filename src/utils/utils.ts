@@ -11,7 +11,7 @@ import { GoogleAuth } from 'google-auth-library';
 // const database = getDatabase();
 
 type SendMessage = (jid: string, content: AnyMessageContent, options?: MiscMessageGenerationOptions) => Promise<proto.WebMessageInfo>
-type User = string
+export type User = string
 export interface Inference {
     user: User,
     prompt: string,
@@ -67,7 +67,7 @@ const checkUserCanInfere = async (user: User): Promise<boolean> => {
  * @param user 
  * @param prompt 
  */
-const doSingleTextInference = async (user: User, prompt: String) => {
+const doSingleTextInference = async (user: User, prompt: string): Promise<Inference> => {
     try {
         // const credentialFilename = "./serviceAccountKey.json";
         //     const scopes = ["https://www.googleapis.com/auth/cloud-platform"];
@@ -114,7 +114,7 @@ const doSingleTextInference = async (user: User, prompt: String) => {
                 console.log('No user found with the given phone number.');
             }
             const response: VertexAIResponse = content
-            await triggerWebhookForSingleInference({ user, prompt, image: response.predictions[0] })
+            return { user, prompt, image: response.predictions[0] }
         } else {
             console.log(inferenceResponse.status)
             console.log('Inference was not successful or the image data is missing.');
@@ -160,6 +160,7 @@ const subscribeUser = async (user: User, subscriptionType: string) => {
 }
 /**
  * Modifies the specific user details, changing the 'subscription' attribute to 'unsubscribed'
+ * Should keep the rest of the subscription period, until next billing
  * @param user 
  */
 const unsubscribeUser = async (user: User) => {
@@ -170,7 +171,7 @@ const unsubscribeUser = async (user: User) => {
     await userDoc.ref.set({ subscription: 'unsubscribed' }, { merge: true });
 }
 
-export { checkUserIsSubscribed, putUserInferencesOnPool, distributeBatchInferences, subscribeUser, unsubscribeUser, doSingleTextInference }
+export { checkUserIsSubscribed, putUserInferencesOnPool, distributeBatchInferences, subscribeUser, unsubscribeUser, doSingleTextInference, triggerWebhookForSingleInference, getUserFromPhoneNumber }
 
 // obtains from Firestore
 async function getUserFromPhoneNumber(phoneNumber: string) {
@@ -196,7 +197,7 @@ function extractPhoneNumber(fullNumber) {
 // @s.whatsapp.net
 
 
-const triggerWebhookForSingleInference = async (inference) => {
+const triggerWebhookForSingleInference = async (inference: Inference) => {
     try {
         // Construct the payload
         const formData = new FormData();

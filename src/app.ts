@@ -76,15 +76,36 @@ app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
 });
 
 app.post('/payment-received', async (req, res) => {
-    // console.log(req.body)
-    const data = (req.body)
-    console.log('Payment received:', data);
-    const subscriptionType: string = data.subscriptionType ?? 'bot-trial';
-    const jid: string = `${data.user}@s.whatsapp.net`
-    subscribeUser(jid, subscriptionType);
-    sock.sendMessage(jid, { text: "Felicidades! Ya puedes empezar a generar imágenes" })
-    res.sendStatus(200);
+    const transactionId = req.body.transaction_id;
+
+    const transactionData = {
+        transactionId: transactionId,
+        status: 'pending',
+    }
+
+    try {
+        await global.db.collection('transactions').doc(transactionId).set(transactionData);
+        res.send('Transaction data recorded');
+    } catch (error) {
+        console.error('Error saving transaction data:', error);
+        res.status(500).send('Internal Server Error');
+    }
+
+
 });
+
+// const saveTempTransactionOndb
+// 
+// app.post('/payment-received', async (req, res) => {
+//     // console.log(req.body)
+//     const data = (req.body)
+//     console.log('Payment received:', data);
+//     const subscriptionType: string = data.subscriptionType ?? 'bot-trial';
+//     const jid: string = `${data.user}@s.whatsapp.net`
+//     subscribeUser(jid, subscriptionType);
+//     sock.sendMessage(jid, { text: "Felicidades! Ya puedes empezar a generar imágenes" })
+//     res.sendStatus(200);
+// });
 
 
 const PORT = 3000;
