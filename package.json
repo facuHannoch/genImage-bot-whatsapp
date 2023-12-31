@@ -9,7 +9,9 @@
     "start": "node dist/app.js",
     "build": "tsc",
     "build:lib": "tsc",
-    "run": "tsc && node dist/app.js"
+    "run": "tsc && node dist/app.js",
+    "clean-auth": "rm -f baileys_store_multi.json && rm -f baileys_auth_info",
+    "clean-auth-windows": "del baileys_store_multi.json && rmdir baileys_auth_info"
 },
 "keywords": [],
   "author": "",
