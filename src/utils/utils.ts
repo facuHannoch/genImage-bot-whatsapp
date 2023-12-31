@@ -206,9 +206,10 @@ const triggerWebhookForSingleInference = async (inference) => {
         // Add your image file to the form data if needed
         // formData.append('image', imageBuffer, 'image.jpg');
 
-        const response = await axios.post('http://localhost:3000/batch-processing-done', formData, {
-            headers: formData.getHeaders(),
-        });
+        // const response = await axios.post('http://localhost:3000/batch-processing-done', formData, {
+        //     headers: formData.getHeaders(),
+        // });
+        const response = await axios.post('http://localhost:3000/batch-processing-done', JSON.stringify([inference]))
 
         console.log('Webhook triggered successfully:', response.status);
     } catch (error) {

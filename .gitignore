@@ -4,7 +4,6 @@ baileys_store_multi.json
 production-vertexai-cred.json
 serviceAccountKey.json
 
-
 # Logs
 logs
 *.log
