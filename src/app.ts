@@ -10,7 +10,7 @@ import path from 'path';
 import { promisify } from 'util';
 
 import P from 'pino';
-const logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` })
+const logger = P({ timestamp: () => `,"|APP|time":"${new Date().toJSON()}"` })
 logger.level = 'info'
 global.logger = logger
 

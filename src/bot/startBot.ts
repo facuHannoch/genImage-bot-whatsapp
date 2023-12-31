@@ -10,8 +10,7 @@ import fs from 'fs'
 import P from 'pino'
 import handleConversation from './handleConversations'
 
-const logger = P({ timestamp: () => `,"BOT| time":"${new Date().toJSON()}"` })
-logger.level = 'warn'
+const logger = P({ timestamp: () => `,"BOT| time":"${new Date().toJSON()}"`, level: 'warn'})
 
 const useStore = !process.argv.includes('--no-store')
 const doReplies = !process.argv.includes('--no-reply')
