@@ -9,14 +9,6 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 
-// import bodyParser from 'body-parser';
-
-const app = express();
-app.use(express.json());
-
-app.use(express.json({limit: '50mb'}));
-app.use(express.urlencoded({limit: '50mb'}));
-
 let sock: WASocket | null = null;
 const initBot = async () => {
     startSock().then((sockInitiated) => sock = sockInitiated)
@@ -47,13 +39,17 @@ global.database = database;
 // 
 
 // Configure multer with memory storage
-// const storage = multer.memoryStorage();
-// const upload = multer({ storage: storage });
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+
+const app = express();
+app.use(express.json());
 
 const writeFileAsync = promisify(fs.writeFile);
 const unlinkAsync = promisify(fs.unlink);
 
-app.post('/batch-processing-done', async (req, res) => {
+app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
     try {
         const inferences = JSON.parse(req.body.inferences);
         // console.log('List of inferences:', inferences);

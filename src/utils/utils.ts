@@ -114,7 +114,6 @@ const doSingleTextInference = async (user: User, prompt: String) => {
                 console.log('No user found with the given phone number.');
             }
             const response: VertexAIResponse = content
-
             await triggerWebhookForSingleInference({ user, prompt, image: response.predictions[0] })
         } else {
             console.log(inferenceResponse.status)
@@ -203,14 +202,7 @@ const triggerWebhookForSingleInference = async (inference) => {
         const formData = new FormData();
         formData.append('inferences', JSON.stringify([inference]));
 
-        // Add your image file to the form data if needed
-        // formData.append('image', imageBuffer, 'image.jpg');
-
-        // const response = await axios.post('http://localhost:3000/batch-processing-done', formData, {
-        //     headers: formData.getHeaders(),
-        // });
-        
-        axios.post('http://localhost:3000/batch-processing-done', { inferences: [inference] })
+        axios.post('http://localhost:3000/batch-processing-done', formData)
             .then(response => console.log('Webhook triggered successfully:', response.status))
             .catch(error => console.error('Error triggering webhook:', error));
     } catch (error) {
