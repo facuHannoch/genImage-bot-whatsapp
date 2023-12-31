@@ -9,6 +9,10 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 
+import P from 'pino';
+const logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` })
+global.logger = logger
+
 let sock: WASocket | null = null;
 const initBot = async () => {
     startSock().then((sockInitiated) => sock = sockInitiated)
@@ -70,13 +74,14 @@ app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
 
         res.sendStatus(200);
     } catch (error) {
-        console.error('Error:', error);
+        logger.error('Error:', error);
         res.status(500).send('Internal Server Error');
     }
 });
 
 app.post('/payment-received', async (req, res) => {
     const transactionId = req.body.transaction_id;
+    logger.info('Payment received ', transactionId)
 
     const transactionData = {
         transactionId: transactionId,
@@ -110,8 +115,8 @@ app.post('/payment-received', async (req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => {
-    return console.log(`Server running on port ${PORT}`);
+    return logger.info(`Server running on port ${PORT}`);
 });
-initBot().then((result) => console.log("Bot initiated"))
+initBot().then((result) => logger.info("Bot initiated"))
 
 // startSock().catch((err: any) => console.error('Error in WhatsApp bot:', err));

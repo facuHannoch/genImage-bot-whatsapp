@@ -31,25 +31,9 @@ const checkUserIsSubscribed = async (user: User): Promise<boolean> => {
     const userDoc = await getUserFromPhoneNumber(user);
     if (!userDoc) return false;
     const data = userDoc.data();
-    console.log(data)
 
     if (!data?.subscription) return false;
     return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
-
-
-    const userRef = global.db.collection("users").doc(user);
-    return await userRef.get().then((res) => {
-        console.log(res.data())
-        if (!res.exists) {
-            return false;
-        }
-        const data = res.data();
-        console.log(data)
-        return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
-    }, (error) => {
-        console.log(error)
-        return false
-    });
 }
 
 /** Checks whether a certain user exists or not in the Firebase Firestore db, and if it has the attribute subscribe to other than 'free' or 'unsubscribed' (returns false if the attribute is set to 'free' or 'unsubscribed') */
@@ -86,7 +70,6 @@ const doSingleTextInference = async (user: User, prompt: string): Promise<Infere
 
         // Make the POST request to the Firebase Cloud Function
         const url: string = 'https://makeindividualtextprompt-qbnmku2fiq-uc.a.run.app'
-        console.log(prompt)
         const inferenceResponse = await axios.post(url, {
             prompt: prompt
         }, {
@@ -116,11 +99,10 @@ const doSingleTextInference = async (user: User, prompt: string): Promise<Infere
             const response: VertexAIResponse = content
             return { user, prompt, image: response.predictions[0] }
         } else {
-            console.log(inferenceResponse.status)
-            console.log('Inference was not successful or the image data is missing.');
+            global.logger.error('Inference was not successful or the image data is missing.');
         }
     } catch (error) {
-        console.error('An error occurred during the inference or Firestore update:', error);
+        global.logger.error('An error occurred during the inference or Firestore update:', error);
     }
 }
 
@@ -181,7 +163,7 @@ async function getUserFromPhoneNumber(phoneNumber: string) {
     const querySnapshot = await userRef.where("phoneNumber", "==", extractPhoneNumber(phoneNumber)).get();
 
     if (querySnapshot.empty) {
-        console.log('No matching documents.');
+        global.logger.warn('No matching documents.');
         return;
     }
 
@@ -207,7 +189,7 @@ const triggerWebhookForSingleInference = async (inference: Inference) => {
             .then(response => console.log('Webhook triggered successfully:', response.status))
             .catch(error => console.error('Error triggering webhook:', error));
     } catch (error) {
-        console.error('Error triggering webhook:', error);
+        global.logger.warn('Error triggering webhook:', error);
     }
 };
 

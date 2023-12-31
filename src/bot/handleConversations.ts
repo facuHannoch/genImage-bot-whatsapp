@@ -36,7 +36,6 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     const userId: string = msg.key.remoteJid
     const isSubscribed = await checkUserIsSubscribed(userId);
     const userState = userStates.get(userId) || { aboutToSubscribe: true, subscribed: isSubscribed }
-    // console.log(msg)
     const text: string | undefined | null =
         msg.message.conversation !== ''
             ? msg.message.conversation
@@ -54,7 +53,6 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
         }
     } else if (!userState.subscribed) {
         const potentialTransactionIds = extractTransactionId(text)
-        console.log(potentialTransactionIds)
         const result = await verifyTransactionAndUpdateUser(userId, potentialTransactionIds, 'bot-trial') // TODO: This part
         if (result === 0) {
             socket.sendMessage(userId, { text: "Felicidades! Ya puedes empezar a generar imágenes" })
@@ -67,9 +65,6 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             userStates.set(userId, { aboutToUnsubscribe: true, subscribed: true })
             socket.sendMessage(userId, { text: "¿Quieres cancelar la subscripción?" });
         } else {
-            // console.log("User is subscribed")
-            // console.log(text ?? msg.message.extendedTextMessage.text)
-            // console.log(msg.message)
             // await putUserInferencesOnPool(userId, text);
             await processRequest(userId, text, socket)
         }
