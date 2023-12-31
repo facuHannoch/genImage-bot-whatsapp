@@ -11,7 +11,7 @@ import P from 'pino'
 import handleConversation from './handleConversations'
 
 const logger = P({ timestamp: () => `,"BOT| time":"${new Date().toJSON()}"` })
-logger.level = 'info'
+logger.level = 'warn'
 
 const useStore = !process.argv.includes('--no-store')
 const doReplies = !process.argv.includes('--no-reply')
