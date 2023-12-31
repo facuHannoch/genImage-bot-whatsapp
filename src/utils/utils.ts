@@ -153,7 +153,7 @@ const unsubscribeUser = async (user: User) => {
     await userDoc.ref.set({ subscription: 'unsubscribed' }, { merge: true });
 }
 
-export { checkUserIsSubscribed, putUserInferencesOnPool, distributeBatchInferences, subscribeUser, unsubscribeUser, doSingleTextInference, triggerWebhookForSingleInference, getUserFromPhoneNumber }
+export { checkUserIsSubscribed, putUserInferencesOnPool, distributeBatchInferences, subscribeUser, unsubscribeUser, doSingleTextInference, triggerWebhookForSingleInference, getUserFromPhoneNumber, checkUserCanInfere }
 
 // obtains from Firestore
 async function getUserFromPhoneNumber(phoneNumber: string) {

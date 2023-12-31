@@ -1,5 +1,5 @@
 import { AnyMessageContent, WASocket, proto } from '@whiskeysockets/baileys';
-import { User, checkUserIsSubscribed, doSingleTextInference, putUserInferencesOnPool, triggerWebhookForSingleInference, unsubscribeUser } from '../utils/utils';
+import { User, checkUserCanInfere, checkUserIsSubscribed, doSingleTextInference, putUserInferencesOnPool, triggerWebhookForSingleInference, unsubscribeUser } from '../utils/utils';
 import { verifyTransactionAndUpdateUser } from '../utils/payments';
 global.aboutToUnsub = false;
 
@@ -14,22 +14,39 @@ const userStates = new Map<User, UserState>();
 
 const processRequest = async (userId: string, requestData: string, socket: WASocket) => {
     if (requestQueue.has(userId)) {
-        socket.sendMessage(userId, { text: "Espera! se está haciendo tu imagen anterior" })
+        await socket.sendMessage(userId, { text: "Espera! se está haciendo tu imagen anterior" });
         return;
     }
     requestQueue.set(userId, requestData);
-    try {
-        const inference = doSingleTextInference(userId, requestData)
+
+    if (checkUserCanInfere(userId)) {
+        // Start the inference process
+        const inferencePromise = doSingleTextInference(userId, requestData);
+
+        // Send the first message immediately
         await socket.sendMessage(userId, { text: "Generando imagen de " + requestData });
-        await socket.sendMessage(userId, { text: "Por favor espera un momento" });
-        await triggerWebhookForSingleInference(await inference)
-    } catch (error) {
-        await socket.sendMessage(userId, { text: "Disculpa, hubo un error" });
+
+        // Wait for 3 seconds before sending the next message
+        setTimeout(async () => {
+            await socket.sendMessage(userId, { text: "Por favor espera un momento" });
+
+            // Wait for the inference to complete and then trigger the webhook
+            inferencePromise.then(async inference => {
+                await triggerWebhookForSingleInference(inference);
+            }).catch(async error => {
+                console.error(error);
+                await socket.sendMessage(userId, { text: "Disculpa, hubo un error" });
+            }).finally(() => {
+                // Remove the user from the queue after 4 seconds
+                setTimeout(() => {
+                    requestQueue.delete(userId);
+                }, 3500);
+            });
+
+        }, 3000); // 3 seconds delay
     }
-    setTimeout(() => {
-        requestQueue.delete(userId);
-    }, 4000);
 };
+
 
 
 const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) => {
