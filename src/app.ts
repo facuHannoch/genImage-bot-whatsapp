@@ -112,7 +112,7 @@ app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.MP_ACCESS_TOKEN_TEST}`
+            "Authorization": `Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`
         },
         body: JSON.stringify(preference)
     })
@@ -165,7 +165,7 @@ app.post('/payment-received', async (req, res) => {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.MP_ACCESS_TOKEN_TEST}`
+            "Authorization": `Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`
         },
     })
         .then(response => response.json())
