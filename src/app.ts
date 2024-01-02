@@ -218,4 +218,4 @@ const PORT = 3000;
 app.listen(PORT, () => {
     return logger.info(`Server running on port ${PORT}`);
 });
-// initBot().then((result) => logger.info("Bot initiated"))
+initBot().then((result) => logger.info("Bot initiated"))
