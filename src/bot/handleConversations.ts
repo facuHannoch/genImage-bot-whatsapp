@@ -33,6 +33,10 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
             // Wait for the inference to complete and then trigger the webhook
             inferencePromise.then(async inference => {
                 await triggerWebhookForSingleInference(inference);
+                // if (inference) {
+                // } else {
+                //     await socket.sendMessage(userId, { text: "Disculpa, no se pude generar tu imagen" })
+                // }
             }).catch(async error => {
                 console.error(error);
                 await socket.sendMessage(userId, { text: "Disculpa, hubo un error" });
@@ -52,7 +56,10 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
 const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) => {
     const userId: string = msg.key.remoteJid
     const isSubscribed = await checkUserIsSubscribed(userId);
-    let userState = userStates.get(userId) || { aboutToSubscribe: true, subscribed: isSubscribed }
+    let userState = {
+        ...userStates.get(userId),
+        subscribed: isSubscribed,
+    }
 
     const text: string | undefined | null =
         msg.message.conversation !== ''
@@ -69,14 +76,14 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             socket.sendMessage(userId, { text: "Subscripción cancelada" });
             return;
         }
-    } else if (!userState.subscribed) {
+    } /* else if (!userState.subscribed) {
         const potentialTransactionIds = extractTransactionId(text)
         const result = await verifyTransactionAndUpdateUser(userId, potentialTransactionIds, 'bot-trial') // TODO: This part
         if (result === 0) {
             socket.sendMessage(userId, { text: "Felicidades! Ya puedes empezar a generar imágenes" })
             userStates.set(userId, { subscribed: true })
         }
-    }
+    } */
     userState = userStates.get(userId) || userState
 
     if (userState.subscribed) {

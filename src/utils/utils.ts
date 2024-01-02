@@ -155,11 +155,11 @@ const unsubscribeUser = async (user: User) => {
 export { checkUserIsSubscribed, putUserInferencesOnPool, distributeBatchInferences, subscribeUser, unsubscribeUser, doSingleTextInference, triggerWebhookForSingleInference, getUserFromPhoneNumber, checkUserCanInfere, extractPhoneNumber }
 
 // obtains from Firestore
-async function getUserFromPhoneNumber(phoneNumber: string) {
+async function getUserFromPhoneNumber(userId: string) {
     const userRef = global.db.collection("users");
 
     // Query to find the user with the specified wpNumber
-    const querySnapshot = await userRef.where("phoneNumber", "==", extractPhoneNumber(phoneNumber)).get();
+    const querySnapshot = await userRef.where("phoneNumber", "==", extractPhoneNumber(userId)).get();
 
     if (querySnapshot.empty) {
         global.logger.warn('No matching documents.');
