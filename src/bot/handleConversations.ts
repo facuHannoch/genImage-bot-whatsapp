@@ -92,7 +92,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
         // socket.sendMessage(userId, { image: { url: "src/media/img.jpg" } });
         await socket.sendMessage(userId, { text: "Ofrecemos un período de muy bajo costo, con el que puedes crear más de 500 imágenes libres de derechos de autor." });
         await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-trial') });
-        await socket.sendMessage(userId, { text: "Si ya has hecho un pago, introduce el id de la transacción para que verifiquemos y empieces a generar" });
+        // await socket.sendMessage(userId, { text: "Si ya has hecho un pago, introduce el id de la transacción para que verifiquemos y empieces a generar" });
         userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
     }
 }
