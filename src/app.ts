@@ -8,6 +8,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
+import cors from 'cors'
 
 import P from 'pino';
 
@@ -51,6 +52,11 @@ app.use(express.json());
 
 const writeFileAsync = promisify(fs.writeFile);
 const unlinkAsync = promisify(fs.unlink);
+
+const corstOptions = {
+    origin: process.env.PAYMENT_PAGE_URL
+}
+app.use(cors(corstOptions))
 
 const allowedUrls: string[] = [process.env.PAYMENT_PAGE_URL]
 const allowedIPs: string[] = [process.env.TEST_ORIGIN_IP_ALLOWED]
