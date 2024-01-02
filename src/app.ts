@@ -52,7 +52,7 @@ app.use(express.json());
 const writeFileAsync = promisify(fs.writeFile);
 const unlinkAsync = promisify(fs.unlink);
 
-const allowedUrls: string[] = [process.env.PAYMENT_PAGE]
+const allowedUrls: string[] = [process.env.PAYMENT_PAGE_URL]
 const allowedIPs: string[] = [process.env.TEST_ORIGIN_IP_ALLOWED]
 
 function checkRequestIPAndURL(req: Request, res: Response, next: NextFunction) {
@@ -94,9 +94,9 @@ app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
         },
         items: items,
         // back_urls: {
-        //     "success": `${process.env.PAYMENT_PAGE}/payment-success?id=${id}&subscription=${subscription}`,
-        //     "failure": "${process.env.PAYMENT_PAGE}/feedback",
-        //     "pending": `${process.env.PAYMENT_PAGE}/payment-success?id=${id}&subscription=${subscription}&status=pending`
+        //     "success": `${process.env.PAYMENT_PAGE_URL}/payment-success?id=${id}&subscription=${subscription}`,
+        //     "failure": "${process.env.PAYMENT_PAGE_URL}/feedback",
+        //     "pending": `${process.env.PAYMENT_PAGE_URL}/payment-success?id=${id}&subscription=${subscription}&status=pending`
         // },
     };
 
