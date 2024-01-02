@@ -91,7 +91,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
         await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
         // socket.sendMessage(userId, { image: { url: "src/media/img.jpg" } });
         await socket.sendMessage(userId, { text: "Ofrecemos un período de muy bajo costo, con el que puedes crear más de 500 imágenes libres de derechos de autor." });
-        await socket.sendMessage(userId, { text: "https://mpago.la/1cy5HB7" });
+        await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-trial') });
         await socket.sendMessage(userId, { text: "Si ya has hecho un pago, introduce el id de la transacción para que verifiquemos y empieces a generar" });
         userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
     }
@@ -103,4 +103,12 @@ function extractTransactionId(msg): string[] | [] {
     const regex = /\b\d+\b/g; // Regular expression to match sequences of digits
     const matches = msg.match(regex);
     return matches || [];
+}
+
+function createPaymentLink(user: User, subscription: string) {
+    const encodedPhone = Buffer.from(user).toString('base64');
+    const doubleEncodedPhone = Buffer.from(encodedPhone).toString('base64');
+    const url = `${process.env.PAYMENT_PAGE}/index.html?p=${doubleEncodedPhone}`;
+
+    return url
 }

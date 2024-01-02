@@ -68,8 +68,7 @@ const doSingleTextInference = async (user: User, prompt: string): Promise<Infere
             "Content-Type": "application/json",
         }
 
-        // Make the POST request to the Firebase Cloud Function
-        const url: string = 'https://makeindividualtextprompt-qbnmku2fiq-uc.a.run.app'
+        const url: string = process.env.GCF_URL_MAKE_INDIVIDUAL_TEXT_PROMPT
         const inferenceResponse = await axios.post(url, {
             prompt: prompt
         }, {
@@ -153,7 +152,7 @@ const unsubscribeUser = async (user: User) => {
     await userDoc.ref.set({ subscription: 'unsubscribed' }, { merge: true });
 }
 
-export { checkUserIsSubscribed, putUserInferencesOnPool, distributeBatchInferences, subscribeUser, unsubscribeUser, doSingleTextInference, triggerWebhookForSingleInference, getUserFromPhoneNumber, checkUserCanInfere }
+export { checkUserIsSubscribed, putUserInferencesOnPool, distributeBatchInferences, subscribeUser, unsubscribeUser, doSingleTextInference, triggerWebhookForSingleInference, getUserFromPhoneNumber, checkUserCanInfere, extractPhoneNumber }
 
 // obtains from Firestore
 async function getUserFromPhoneNumber(phoneNumber: string) {
