@@ -61,14 +61,14 @@ function checkRequestIPAndURL(req: Request, res: Response, next: NextFunction) {
 
     const isIPAllowed = allowedIPs.includes(requestIP)
     const isRefererAllowed = referer && allowedUrls.includes(new URL(referer).origin)
-    if (isIPAllowed && isRefererAllowed) {
+    if (isIPAllowed || isRefererAllowed) {
         next()
     } else {
         res.status(403).send(`Access Denied from IP: ${requestIP}, Referer: ${referer}`)
     }
 }
 
-app.get('/ping', async (req, res) => res.status(200).send("OKI"))
+// app.get('/ping', async (req, res) => res.status(200).send("OKI"))
 
 app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
     const { subscription, id } = req.body // id is user id, which is the phone number
@@ -212,4 +212,4 @@ const PORT = 3000;
 app.listen(PORT, () => {
     return logger.info(`Server running on port ${PORT}`);
 });
-initBot().then((result) => logger.info("Bot initiated"))
+// initBot().then((result) => logger.info("Bot initiated"))
