@@ -53,17 +53,22 @@ const writeFileAsync = promisify(fs.writeFile);
 const unlinkAsync = promisify(fs.unlink);
 
 const allowedUrls: string[] = [process.env.PAYMENT_PAGE]
+const allowedIPs: string[] = [process.env.TEST_ORIGIN_IP_ALLOWED]
 
-function checkRequestOrigin(req: Request, res: Response, next: NextFunction) {
+function checkRequestIPAndURL(req: Request, res: Response, next: NextFunction) {
+    const requestIP: string = req.ip || req.socket.remoteAddress || ''
     const referer = req.get('Referer')
-    if (referer && allowedUrls.includes(new URL(referer).origin)) {
+
+    const isIPAllowed = allowedIPs.includes(requestIP)
+    const isRefererAllowed = referer && allowedUrls.includes(new URL(referer).origin)
+    if (isIPAllowed && isRefererAllowed) {
         next()
     } else {
-        res.status(403).send('Access denied')
+        res.status(403).send(`Access Denied from IP: ${requestIP}, Referer: ${referer}`)
     }
 }
 
-app.post('/get-payment-details', checkRequestOrigin, async (req, res) => {
+app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
     const { subscription, id } = req.body // id is user id, which is the phone number
     logger.info(req.body)
 
