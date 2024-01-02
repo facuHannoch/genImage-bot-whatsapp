@@ -68,6 +68,8 @@ function checkRequestIPAndURL(req: Request, res: Response, next: NextFunction) {
     }
 }
 
+app.get('/ping', async (req, res) => console.log(res.status(200).send("OKI")))
+
 app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
     const { subscription, id } = req.body // id is user id, which is the phone number
     logger.info(req.body)
