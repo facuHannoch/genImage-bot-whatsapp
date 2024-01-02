@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import startSock from './bot/startBot';
 import { AnyMessageContent, AnyRegularMessageContent, PollMessageOptions, WASocket, proto } from '@whiskeysockets/baileys';
 import { FirebaseOptions, initializeApp } from "firebase/app";
@@ -52,7 +52,18 @@ app.use(express.json());
 const writeFileAsync = promisify(fs.writeFile);
 const unlinkAsync = promisify(fs.unlink);
 
-app.post('/get-payment-details', async (req, res) => {
+const allowedUrls: string[] = [process.env.PAYMENT_PAGE]
+
+function checkRequestOrigin(req: Request, res: Response, next: NextFunction) {
+    const referer = req.get('Referer')
+    if (referer && allowedUrls.includes(new URL(referer).origin)) {
+        next()
+    } else {
+        res.status(403).send('Access denied')
+    }
+}
+
+app.post('/get-payment-details', checkRequestOrigin, async (req, res) => {
     const { subscription, id } = req.body // id is user id, which is the phone number
     logger.info(req.body)
 
