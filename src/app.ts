@@ -85,8 +85,8 @@ app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
             "title": "bot-trial",
             "description": "Subscription for bot WhatsApp service",
             "quantity": 1,
-            "currency_id": "USD",
-            "unit_price": 2.4
+            "currency_id": "ARG",
+            "unit_price": 2970
         }
     ]
     // switch (subscription) {
