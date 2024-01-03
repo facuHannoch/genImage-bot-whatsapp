@@ -137,14 +137,17 @@ app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
             // const path = './'
             const filename = path.join(__dirname, `tempImage-${Date.now()}.jpg`); // Unique filename for each image
             // const filename = path.join('./public/img-generated-temp', `tempImage-${Date.now()}.jpg`);
-            await writeFileAsync(filename, buffer);
-
-            sock.sendMessage(inference.user, { image: { url: filename } });
-            // sock.sendMessage(inference.user, { sticker: { url: filename } });
-            sock.sendMessage(inference.user, { text: "Tu imagen ha sido procesada!" });
-
-            // Optionally delete the image file after sending
-            await unlinkAsync(filename);
+            writeFileAsync(filename, buffer)
+                .then(() => {
+                    sock.sendMessage(inference.user, { text: "Tu imagen ha sido procesada!" });
+                    // sock.sendMessage(inference.user, { sticker: { url: filename } });
+                    sock.sendMessage(inference.user, { image: { url: filename } })
+                        .then(() => unlinkAsync(filename)) // delete the image file after sending the image
+                        .catch(error => logger.error('Error deleting the file:', error));
+                })
+                .catch(error => {
+                    logger.error('Error writing the file:', error);
+                });
         }
 
         res.sendStatus(200);
