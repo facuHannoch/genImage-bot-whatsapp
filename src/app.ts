@@ -128,13 +128,15 @@ app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
 app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
     try {
         const inferences = JSON.parse(req.body.inferences);
+        logger.error(path.join(__dirname, `tempImage-${Date.now()}.jpg`));
+        logger.error("-------------------------1")
         // console.log('List of inferences:', inferences);
 
         for (const inference of inferences) {
             const buffer = Buffer.from(inference.image, 'base64');
             // const path = './'
-            // const filename = path.join(__dirname, `tempImage-${Date.now()}.jpg`); // Unique filename for each image
-            const filename = path.join('./public/', `tempImage-${Date.now()}.jpg`);
+            const filename = path.join(__dirname, `tempImage-${Date.now()}.jpg`); // Unique filename for each image
+            // const filename = path.join('./public/img-generated-temp', `tempImage-${Date.now()}.jpg`);
             await writeFileAsync(filename, buffer);
 
             sock.sendMessage(inference.user, { image: { url: filename } });
@@ -148,6 +150,7 @@ app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
         res.sendStatus(200);
     } catch (error) {
         logger.error('Error:', error);
+        logger.error(`Error ${error}`);
         res.status(500).send('Internal Server Error');
     }
 });
