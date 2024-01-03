@@ -47,7 +47,7 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
                 }, 3500);
             });
 
-        }, 3000); // 3 seconds delay
+        }, 2000); // 2 seconds delay
     }
 };
 
@@ -97,7 +97,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     } else {
         await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
         // socket.sendMessage(userId, { image: { url: "src/media/img.jpg" } });
-        await socket.sendMessage(userId, { text: "Ofrecemos un período de muy bajo costo, con el que puedes crear más de 500 imágenes libres de derechos de autor." });
+        await socket.sendMessage(userId, { text: "Genera y usa como quieras más de 300 imágenes, por un período de prueba de 5 días de $3000" })
         await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-trial') });
         // await socket.sendMessage(userId, { text: "Si ya has hecho un pago, introduce el id de la transacción para que verifiquemos y empieces a generar" });
         userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
