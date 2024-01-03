@@ -132,8 +132,9 @@ app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
 
         for (const inference of inferences) {
             const buffer = Buffer.from(inference.image, 'base64');
-            const filename = path.join(__dirname, `tempImage-${Date.now()}.jpg`); // Unique filename for each image
-
+            // const path = './'
+            // const filename = path.join(__dirname, `tempImage-${Date.now()}.jpg`); // Unique filename for each image
+            const filename = path.join('./public/', `tempImage-${Date.now()}.jpg`);
             await writeFileAsync(filename, buffer);
 
             sock.sendMessage(inference.user, { image: { url: filename } });
