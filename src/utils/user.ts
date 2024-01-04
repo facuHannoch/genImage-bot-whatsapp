@@ -26,13 +26,14 @@ export const unsubscribeUser = async (user: User) => {
 }
 
 /** Checks whether a certain user exists or not in the Firebase Firestore db, and if it has the attribute subscribe to other than 'free' or 'unsubscribed' (returns false if the attribute is set to 'free' or 'unsubscribed') */
-export const checkUserIsSubscribed = async (user: User): Promise<boolean> => {
+export const checkUserIsSubscribed = async (user: User): Promise<string> => {
     const userDoc = await getUserFromPhoneNumber(user);
-    if (!userDoc) return false;
+    if (!userDoc) return;
     const data = userDoc.data();
 
-    if (!data?.subscription) return false;
-    return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
+    if (!data?.subscription) return;
+    return data.subscription
+    //  && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
 }
 
 

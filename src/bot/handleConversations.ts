@@ -7,8 +7,8 @@ global.aboutToUnsub = false;
 interface UserState {
     aboutToSubscribe?: boolean,
     aboutToUnsubscribe?: boolean,
-    subscription?: string,
-    subscribed: boolean,
+    subscription: string,
+    subscribed?: boolean,
     onTrial?: number,
 }
 const requestQueue = new Map();
@@ -82,17 +82,21 @@ async function makeTestInference(userId: string, requestData: string, socket: WA
 
 const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) => {
     const userId: string = msg.key.remoteJid
-    const isSubscribed = await checkUserIsSubscribed(userId);
+    const subscription: string = await checkUserIsSubscribed(userId);
     let userState = {
         ...userStates.get(userId),
-        subscribed: isSubscribed,
+        subscription,
+        // subscribed: subscription
     }
     const text: string | undefined | null =
         msg.message.conversation !== ''
             ? msg.message.conversation
             : msg.message.extendedTextMessage?.text
 
-
+    global.logger.warn(userState)
+    console.log("userState")
+    console.log(userState)
+    console.log("userState")
     if (userState.onTrial > 0 /* && userState.onTrial < 3 */) {
         if (userState.onTrial == 1) {
 
@@ -105,13 +109,13 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
                     await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" });
                 }, 3000);
             }, 5000);
-            userStates.set(userId, { onTrial: 2, subscribed: false })
+            userStates.set(userId, { onTrial: 2, subscription })
         } else if (userState.onTrial == 2) {
             await makeTestInference(userId, text, socket)
             setTimeout(async () => {
                 await socket.sendMessage(userId, { text: "¿Ahí tienes, hacer esas imágenes no fue gratis, pero son un regalo para vos!" });
             }, 3000);
-            userStates.set(userId, { onTrial: 3, subscribed: false })
+            userStates.set(userId, { onTrial: 3, subscription })
         } else if (userState.onTrial == 3) {
         }
 
@@ -129,16 +133,16 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
 
         if (subscriptionType !== '') {
             await socket.sendMessage(userId, { text: createPaymentLink(userId, subscriptionType) });
-            userStates.set(userId, { aboutToSubscribe: true, subscribed: false, onTrial: 0 })
+            userStates.set(userId, { aboutToSubscribe: true, subscription, onTrial: 0 })
         }
 
         return
     }
     userState = userStates.get(userId) || userState
 
-    if (userState.subscribed) {
+    if (userState.subscription && userState.subscription != 'free-trial') {
         if (text === "-unsubscribe") {
-            userStates.set(userId, { aboutToUnsubscribe: true, subscribed: true })
+            userStates.set(userId, { aboutToUnsubscribe: true, subscription })
             socket.sendMessage(userId, { text: "¿Quieres cancelar la subscripción?" });
         } else {
             // await putUserInferencesOnPool(userId, text);
@@ -149,13 +153,13 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             return
         }
     } else {
-        // if (userState.aboutToUnsubscribe) {
-        if (text === "si") {
-            // userStates.set(userId, { subscribed: true })
-            unsubscribeUser(userId);
-            socket.sendMessage(userId, { text: "Subscripción cancelada" });
-            return;
-        }
+        if (userState.aboutToUnsubscribe)
+            if (text === "si") {
+                // userStates.set(userId, { subscribed: true })
+                unsubscribeUser(userId);
+                socket.sendMessage(userId, { text: "Subscripción cancelada" });
+                return;
+            }
     } /* else if (!userState.subscribed) {
         const potentialTransactionIds = extractTransactionId(text)
         const result = await verifyTransactionAndUpdateUser(userId, potentialTransactionIds, 'bot-trial') // TODO: This part
@@ -166,7 +170,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     } */
     userState = userStates.get(userId) || userState
 
-    if (!userState.subscribed) {
+    if (!userState.subscription) {
         subscribeUser(userId, 'free-trial')
         setTimeout(async () => {
             await socket.sendMessage(userId, { text: "Hola! Te cuento cómo funciona (¡es muy sencillo!)" });
@@ -178,7 +182,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             }, 200);
         }, 3500);
 
-        userStates.set(userId, { onTrial: 1, subscribed: false })
+        userStates.set(userId, { onTrial: 1, subscription: "free-trial" })
     } /* else if (text === "quiero probarlo") {
         subscribeUser(userId, 'free-trial')
         // await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
