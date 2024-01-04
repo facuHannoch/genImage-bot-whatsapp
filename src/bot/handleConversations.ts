@@ -70,13 +70,12 @@ async function makeTestInference(userId: string, requestData: string, socket: WA
     const inferencePromise = doSingleTextInference(userId, requestData);
     await socket.sendMessage(userId, { text: "Generando imagen de " + requestData });
 
-    inferencePromise.then(async inference => {
+    await inferencePromise.then(async inference => {
         await triggerWebhookForSingleInference(inference);
     }).catch(async error => {
         console.error(error);
         await socket.sendMessage(userId, { text: "Disculpa, hubo un error" });
     })
-
 }
 
 
