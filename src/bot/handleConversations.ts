@@ -100,9 +100,9 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             // Send the first message immediately
             // await socket.sendMessage(userId, { text: "¿Qué te pareció?" });
             setTimeout(async () => {
-                await socket.sendMessage(userId, { text: "Probemos una vez más, déjame hacerte una sugerencia, escribe..." + text });
+                await socket.sendMessage(userId, { text: "Probemos una vez más, déjame hacerte una sugerencia, escribe..." });
                 setTimeout(async () => {
-                    await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" + text });
+                    await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" });
                 }, 3000);
             }, 8000);
             userStates.set(userId, { onTrial: 2, subscribed: false })
