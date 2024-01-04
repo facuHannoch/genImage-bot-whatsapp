@@ -61,6 +61,7 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
             //     // socket.sendMessage(userId, { text: "Has alcanzado el límite de imágenes creadas por este período" })
             //     break;
         }
+        requestQueue.delete(userId);
     }
 };
 
