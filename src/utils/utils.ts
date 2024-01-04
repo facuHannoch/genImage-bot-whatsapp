@@ -35,15 +35,35 @@ const checkUserIsSubscribed = async (user: User): Promise<boolean> => {
     if (!data?.subscription) return false;
     return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
 }
+function maxImgPerPeriod(subscription): number {
+    switch(subscription) {
+        case 'free-trial':
+            return 3
+        case 'bot-trial':
+            return 300
+        case 'bot-full':
+            return 800
+    }
+}
 
+interface subscriptionExceededMsg {
+    msg: string,
+    subscription?: string,
+}
 /** Checks whether a certain user exists or not in the Firebase Firestore db, and if it has the attribute subscribe to other than 'free' or 'unsubscribed' (returns false if the attribute is set to 'free' or 'unsubscribed') */
-const checkUserCanInfere = async (user: User): Promise<boolean> => {
-    return true;
-
+const checkUserCanInfere = async (user: User): Promise<subscriptionExceededMsg> => {
     const userDoc = await getUserFromPhoneNumber(user);
-    if (!userDoc) return false;
+    if (!userDoc) return {msg: "no user"};
     const data = userDoc.data();
-    return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed' && data.inferencesRemaining > 0;
+
+    if (!data?.subscription) return {msg: "no subscription"};
+    if (data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed') {
+        if (data.thisPeriodCountInferences == maxImgPerPeriod(data.subscription)) { // TODO
+            return {msg: "inferences number exceeded", subscription: data.subscription};
+        } else if (false) {
+            // Add logic to check whether user has the subscription up to date
+        }
+    }
 }
 
 /**
@@ -88,7 +108,8 @@ const doSingleTextInference = async (user: User, prompt: string): Promise<Infere
 
                 // Update the countImagesGenerated field
                 await userDocument.ref.update({
-                    countImagesGenerated: admin.firestore.FieldValue.increment(1)
+                    countImagesGenerated: admin.firestore.FieldValue.increment(1),
+                    thisPeriodCountInferences: admin.firestore.FieldValue.increment(1)
                 });
 
                 console.log('Updated user document successfully.');
@@ -137,7 +158,11 @@ const distributeBatchInferences = (listInferences: Inference[], sendMessageFunct
  */
 const subscribeUser = async (user: User, subscriptionType: string) => {
     const userRef = global.db.collection("users").doc();
-    await userRef.set({ phoneNumber: extractPhoneNumber(user), subscription: subscriptionType }, { merge: true });
+    await userRef.set({
+        phoneNumber: extractPhoneNumber(user),
+        subscription: subscriptionType,
+        thisPeriodCountInferences: 0,
+    }, { merge: true });
 }
 /**
  * Modifies the specific user details, changing the 'subscription' attribute to 'unsubscribed'

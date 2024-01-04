@@ -19,7 +19,8 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
     }
     requestQueue.set(userId, requestData);
 
-    if (checkUserCanInfere(userId)) {
+    const canInfere = await checkUserCanInfere(userId)
+    if (canInfere.msg == '') {
         // Start the inference process
         const inferencePromise = doSingleTextInference(userId, requestData);
 
@@ -46,8 +47,20 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
                     requestQueue.delete(userId);
                 }, 3500);
             });
-
         }, 2000); // 2 seconds delay
+    } else {
+        switch (canInfere.msg) {
+            case 'inferences number exceeded':
+                if (canInfere.subscription != 'bot-full') {
+                    socket.sendMessage(userId, { text: "Has alcanzado el límite de imágenes para tu subscripción" })
+                }
+                break;
+            case 'no user':
+                break;
+            // case 'no subscription':
+            //     // socket.sendMessage(userId, { text: "Has alcanzado el límite de imágenes creadas por este período" })
+            //     break;
+        }
     }
 };
 
