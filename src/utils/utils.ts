@@ -36,7 +36,7 @@ const checkUserIsSubscribed = async (user: User): Promise<boolean> => {
     return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
 }
 function maxImgPerPeriod(subscription): number {
-    switch(subscription) {
+    switch (subscription) {
         case 'free-trial':
             return 3
         case 'bot-trial':
@@ -53,17 +53,18 @@ interface subscriptionExceededMsg {
 /** Checks whether a certain user exists or not in the Firebase Firestore db, and if it has the attribute subscribe to other than 'free' or 'unsubscribed' (returns false if the attribute is set to 'free' or 'unsubscribed') */
 const checkUserCanInfere = async (user: User): Promise<subscriptionExceededMsg> => {
     const userDoc = await getUserFromPhoneNumber(user);
-    if (!userDoc) return {msg: "no user"};
+    if (!userDoc) return { msg: "no user" };
     const data = userDoc.data();
 
-    if (!data?.subscription) return {msg: "no subscription"};
+    if (!data?.subscription) return { msg: "no subscription" };
     if (data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed') {
         if (data.thisPeriodCountInferences == maxImgPerPeriod(data.subscription)) { // TODO
-            return {msg: "inferences number exceeded", subscription: data.subscription};
+            return { msg: "inferences number exceeded", subscription: data.subscription };
         } else if (false) {
             // Add logic to check whether user has the subscription up to date
         }
     }
+    return { msg: "", subscription: data.subscription }
 }
 
 /**
