@@ -1,6 +1,6 @@
 import { AnyMessageContent, WASocket, proto } from '@whiskeysockets/baileys';
 import { User, checkUserCanInfere, doSingleTextInference, putUserInferencesOnPool, triggerWebhookForSingleInference } from '../utils/utils';
-import {checkUserIsSubscribed, unsubscribeUser } from '../utils/user'
+import { checkUserIsSubscribed, unsubscribeUser } from '../utils/user'
 import { verifyTransactionAndUpdateUser } from '../utils/payments';
 global.aboutToUnsub = false;
 
@@ -109,7 +109,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
             return
         }
-    } else if (text === "subscribirse") {
+    } else if (text === "subscribirse" || text === "Subscribirse" || text === "subscribir" || text === "Subscribir" || text === "suscribirse" || text === "Suscribirse" || text === "suscribir" || text === "Suscribir") {
         // await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
         // socket.sendMessage(userId, { image: { url: "src/media/img.jpg" } });
         // await socket.sendMessage(userId, { text: "Genera y usa como quieras más de 300 imágenes, por un período de prueba de 5 días de $2970" })
