@@ -94,14 +94,14 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             // await putUserInferencesOnPool(userId, text);
             await processRequest(userId, text, socket)
         }
-    } else {
+    } /* else {
         await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
         // socket.sendMessage(userId, { image: { url: "src/media/img.jpg" } });
         await socket.sendMessage(userId, { text: "Genera y usa como quieras más de 300 imágenes, por un período de prueba de 5 días de $2970" })
         await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-trial') });
         // await socket.sendMessage(userId, { text: "Si ya has hecho un pago, introduce el id de la transacción para que verifiquemos y empieces a generar" });
         userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
-    }
+    } */
 }
 
 export default handleConversation
