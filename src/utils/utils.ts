@@ -1,14 +1,9 @@
-// import { getFirestore, doc, getDoc, updateDoc, setDoc, Firestore } from "firebase/firestore";
-// import { getDatabase, ref, push, Database } from "firebase/database";
 import { MiscMessageGenerationOptions, AnyMessageContent, proto } from '@whiskeysockets/baileys';
 import axios from 'axios';
 import * as admin from 'firebase-admin';
 import FormData from 'form-data'
-// import fs from 'fs'
-import google from 'googleapis' // rm
 import { GoogleAuth } from 'google-auth-library';
-// const db = getFirestore();
-// const database = getDatabase();
+import { extractPhoneNumber, getUserFromPhoneNumber } from './user';
 
 type SendMessage = (jid: string, content: AnyMessageContent, options?: MiscMessageGenerationOptions) => Promise<proto.WebMessageInfo>
 export type User = string
@@ -26,15 +21,6 @@ interface VertexAIResponse {
     modelVersionId: string
 }
 
-/** Checks whether a certain user exists or not in the Firebase Firestore db, and if it has the attribute subscribe to other than 'free' or 'unsubscribed' (returns false if the attribute is set to 'free' or 'unsubscribed') */
-const checkUserIsSubscribed = async (user: User): Promise<boolean> => {
-    const userDoc = await getUserFromPhoneNumber(user);
-    if (!userDoc) return false;
-    const data = userDoc.data();
-
-    if (!data?.subscription) return false;
-    return data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed';
-}
 function maxImgPerPeriod(subscription): number {
     switch (subscription) {
         case 'free-trial':
@@ -153,55 +139,8 @@ const distributeBatchInferences = (listInferences: Inference[], sendMessageFunct
         sendMessageFunction(user, { image: { url: image } })
     })
 }
-/**
- * Adds the user details to the Firebase Firestore db, and sets the 'subscription' attribute to 'bot-trial'
- * @param user 
- */
-const subscribeUser = async (user: User, subscriptionType: string) => {
-    const userRef = global.db.collection("users").doc();
-    await userRef.set({
-        phoneNumber: extractPhoneNumber(user),
-        subscription: subscriptionType,
-        thisPeriodCountInferences: 0,
-    }, { merge: true });
-}
-/**
- * Modifies the specific user details, changing the 'subscription' attribute to 'unsubscribed'
- * Should keep the rest of the subscription period, until next billing
- * @param user 
- */
-const unsubscribeUser = async (user: User) => {
-    const userDoc = await getUserFromPhoneNumber(user);
-    if (!userDoc) return;
 
-    // Update the subscription status of the found user
-    await userDoc.ref.set({ subscription: 'unsubscribed' }, { merge: true });
-}
-
-export { checkUserIsSubscribed, putUserInferencesOnPool, distributeBatchInferences, subscribeUser, unsubscribeUser, doSingleTextInference, triggerWebhookForSingleInference, getUserFromPhoneNumber, checkUserCanInfere, extractPhoneNumber }
-
-// obtains from Firestore
-async function getUserFromPhoneNumber(userId: string) {
-    const userRef = global.db.collection("users");
-
-    // Query to find the user with the specified wpNumber
-    const querySnapshot = await userRef.where("phoneNumber", "==", extractPhoneNumber(userId)).get();
-
-    if (querySnapshot.empty) {
-        global.logger.warn('No matching documents.');
-        return;
-    }
-
-    // Assuming there's only one user with this wpNumber
-    const userDoc = querySnapshot.docs[0];
-    return userDoc;
-}
-
-function extractPhoneNumber(fullNumber) {
-    const parts = fullNumber.split('@');
-    return parts[0];
-}
-// @s.whatsapp.net
+export { putUserInferencesOnPool, distributeBatchInferences, doSingleTextInference, triggerWebhookForSingleInference, checkUserCanInfere }
 
 
 const triggerWebhookForSingleInference = async (inference: Inference) => {

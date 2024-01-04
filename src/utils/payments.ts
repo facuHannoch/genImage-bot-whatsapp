@@ -1,4 +1,5 @@
-import { User, getUserFromPhoneNumber, subscribeUser } from "./utils";
+import { subscribeUser } from "./user";
+import { User } from "./utils";
 
 const verifyTransactionAndUpdateUser = async (user: User, transactionIds: string[], subscription: string) => {
     let transactionFound = false;

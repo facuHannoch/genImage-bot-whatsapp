@@ -1,5 +1,6 @@
 import { AnyMessageContent, WASocket, proto } from '@whiskeysockets/baileys';
-import { User, checkUserCanInfere, checkUserIsSubscribed, doSingleTextInference, putUserInferencesOnPool, triggerWebhookForSingleInference, unsubscribeUser } from '../utils/utils';
+import { User, checkUserCanInfere, doSingleTextInference, putUserInferencesOnPool, triggerWebhookForSingleInference } from '../utils/utils';
+import {checkUserIsSubscribed, unsubscribeUser } from '../utils/user'
 import { verifyTransactionAndUpdateUser } from '../utils/payments';
 global.aboutToUnsub = false;
 
