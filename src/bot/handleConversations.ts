@@ -97,7 +97,9 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     console.log("userState")
     console.log(userState)
     console.log("userState")
-    if (userState.onTrial > 0 /* && userState.onTrial < 3 */) {
+
+
+    if (userState.onTrial > 0 && userState.subscription === 'free-trial') {
         if (userState.onTrial == 1) {
 
             await makeTestInference(userId, text, socket)
@@ -133,7 +135,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
 
         if (subscriptionType !== '') {
             await socket.sendMessage(userId, { text: createPaymentLink(userId, subscriptionType) });
-            userStates.set(userId, { aboutToSubscribe: true, subscription, onTrial: 0 })
+            // userStates.set(userId, { aboutToSubscribe: true, subscription, onTrial: 3 })
         }
 
         return
