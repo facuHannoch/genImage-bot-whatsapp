@@ -93,7 +93,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             : msg.message.extendedTextMessage?.text
 
 
-    if (userState.onTrial > 0/*  && "5491156928198" == extractPhoneNumber(userId) */) {
+    if (userState.onTrial > 0 /* && userState.onTrial < 3 */) {
         if (userState.onTrial == 1) {
 
             await makeTestInference(userId, text, socket)
@@ -109,15 +109,44 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
         } else if (userState.onTrial == 2) {
             makeTestInference(userId, text, socket)
             await socket.sendMessage(userId, { text: "¿Ahí tienes, hacer esas imágenes no fue gratis, pero son un regalo para vos!" });
-            userStates.set(userId, { onTrial: 0, subscribed: false })
+            userStates.set(userId, { onTrial: 3, subscribed: false })
         } else if (userState.onTrial == 3) {
-
         }
+
+        const susbscribePattern = /sub?scribir((se)|(me))?/i
+        const subscribeFullPattern = /sub?scribir((se)|(me))?/i
+        let subscriptionType: string = ''
+
+        if (susbscribePattern.test(text)) {
+            subscriptionType = 'bot-trial'
+        } else if (text === "suscribirse paquete imágenes") {
+            subscriptionType = 'bot-imgs-batch'
+        } else if (subscribeFullPattern.test(text)) {
+            subscriptionType = 'bot-full'
+        }
+
+        if (subscriptionType !== '') {
+            await socket.sendMessage(userId, { text: createPaymentLink(userId, subscriptionType) });
+            userStates.set(userId, { aboutToSubscribe: true, subscribed: false, onTrial: 0 })
+        }
+
         return
     }
 
-
-    if (userState.aboutToUnsubscribe) {
+    if (userState.subscribed) {
+        if (text === "-unsubscribe") {
+            userStates.set(userId, { aboutToUnsubscribe: true, subscribed: true })
+            socket.sendMessage(userId, { text: "¿Quieres cancelar la subscripción?" });
+        } else {
+            // await putUserInferencesOnPool(userId, text);
+            await processRequest(userId, text, socket)
+        }
+        if (!text) {
+            socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
+            return
+        }
+    } else {
+        // if (userState.aboutToUnsubscribe) {
         if (text === "si") {
             // userStates.set(userId, { subscribed: true })
             unsubscribeUser(userId);
@@ -134,31 +163,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     } */
     userState = userStates.get(userId) || userState
 
-    const susbscribePattern = /sub?scribir((se)|(me))?/i
-    const subscribeFullPattern = /sub?scribir((se)|(me))?/i
-
-    if (userState.subscribed) {
-        if (text === "-unsubscribe") {
-            userStates.set(userId, { aboutToUnsubscribe: true, subscribed: true })
-            socket.sendMessage(userId, { text: "¿Quieres cancelar la subscripción?" });
-        } else {
-            // await putUserInferencesOnPool(userId, text);
-            await processRequest(userId, text, socket)
-        }
-        if (!text) {
-            socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
-            return
-        }
-    } else if (susbscribePattern.test(text)) {
-        await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-trial') });
-        userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
-    } else if (text === "suscribirse paquete imágenes") {
-        await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-imgs-batch') });
-        userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
-    } else if (subscribeFullPattern.test(text)) {
-        await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-imgs-batch') });
-        userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
-    } else {
+    if (!userState.subscribed) {
         subscribeUser(userId, 'free-trial')
         setTimeout(async () => {
             await socket.sendMessage(userId, { text: "Hola! Te cuento cómo funcion (¡es muy sencillo!)" });
