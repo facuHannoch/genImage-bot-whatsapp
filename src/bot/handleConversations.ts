@@ -104,11 +104,13 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
                 setTimeout(async () => {
                     await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" });
                 }, 3000);
-            }, 8000);
+            }, 5000);
             userStates.set(userId, { onTrial: 2, subscribed: false })
         } else if (userState.onTrial == 2) {
-            makeTestInference(userId, text, socket)
-            await socket.sendMessage(userId, { text: "¿Ahí tienes, hacer esas imágenes no fue gratis, pero son un regalo para vos!" });
+            await makeTestInference(userId, text, socket)
+            setTimeout(async () => {
+                await socket.sendMessage(userId, { text: "¿Ahí tienes, hacer esas imágenes no fue gratis, pero son un regalo para vos!" });
+            }, 3000);
             userStates.set(userId, { onTrial: 3, subscribed: false })
         } else if (userState.onTrial == 3) {
         }
@@ -167,11 +169,13 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     if (!userState.subscribed) {
         subscribeUser(userId, 'free-trial')
         setTimeout(async () => {
-            await socket.sendMessage(userId, { text: "Hola! Te cuento cómo funcion (¡es muy sencillo!)" });
-            await socket.sendMessage(userId, { text: "Vos le escribís a este mismo chat, y en segundos obtienes una imagen generada de lo que pediste" });
+            await socket.sendMessage(userId, { text: "Hola! Te cuento cómo funciona (¡es muy sencillo!)" });
             setTimeout(async () => {
-                await socket.sendMessage(userId, { text: "Hagamos una prueba... escribe \"perrito\" (o lo que desees)" })
-            }, 3500);
+                await socket.sendMessage(userId, { text: "Vos le escribís a este mismo chat, y en segundos obtienes una imagen generada de lo que pediste" });
+                setTimeout(async () => {
+                    await socket.sendMessage(userId, { text: "Hagamos una prueba... escribe \"perrito\" (o lo que desees)" })
+                }, 3500);
+            }, 200);
         }, 3500);
 
         userStates.set(userId, { onTrial: 1, subscribed: false })
