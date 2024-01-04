@@ -146,31 +146,31 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     }
     userState = userStates.get(userId) || userState
 
-    if (userState.subscription != 'free-trial') {
-        if (userState.subscription) {
-            if (text === "-unsubscribe") {
-                userStates.set(userId, { aboutToUnsubscribe: true, subscription })
-                socket.sendMessage(userId, { text: "¿Quieres cancelar la subscripción?" });
-            } else {
-                // await putUserInferencesOnPool(userId, text);
-                await processRequest(userId, text, socket)
-            }
-            if (!text) {
-                socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
-                return
-            }
+    // When the user is really subscribed...
+    if (userState.subscription && userState.subscription != 'free-trial') {
+        if (text === "-unsubscribe") {
+            userStates.set(userId, { aboutToUnsubscribe: true, subscription })
+            socket.sendMessage(userId, { text: "¿Quieres cancelar la subscripción?" });
         } else {
-            if (userState.aboutToUnsubscribe)
-                if (text === "si") {
-                    // userStates.set(userId, { subscribed: true })
-                    unsubscribeUser(userId);
-                    socket.sendMessage(userId, { text: "Subscripción cancelada" });
-                    return;
-                }
+            // await putUserInferencesOnPool(userId, text);
+            await processRequest(userId, text, socket)
         }
+        if (!text) {
+            socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
+            return
+        }
+        // Handling actions like unsubscription
+        if (userState.aboutToUnsubscribe)
+            if (text === "si") {
+                // userStates.set(userId, { subscribed: true })
+                unsubscribeUser(userId);
+                socket.sendMessage(userId, { text: "Subscripción cancelada" });
+                return;
+            }
     }
     userState = userStates.get(userId) || userState
 
+    // When the user is not subscribed (first touch with the app)
     if (!userState.subscription) {
         subscribeUser(userId, 'free-trial')
         setTimeout(async () => {
