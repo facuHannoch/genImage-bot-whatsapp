@@ -103,8 +103,8 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
                 await socket.sendMessage(userId, { text: "Probemos una vez más, déjame hacerte una sugerencia, escribe..." + text });
                 setTimeout(async () => {
                     await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" + text });
-                }, 2000);
-            }, 7000);
+                }, 3000);
+            }, 8000);
             userStates.set(userId, { onTrial: 2, subscribed: false })
         } else if (userState.onTrial == 2) {
             makeTestInference(userId, text, socket)
@@ -165,8 +165,8 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             await socket.sendMessage(userId, { text: "Vos le escribís a este mismo chat, y en segundos obtienes una imagen generada de lo que pediste" });
             setTimeout(async () => {
                 await socket.sendMessage(userId, { text: "Hagamos una prueba... escribe \"perrito\" (o lo que desees)" })
-            }, 1500);
-        }, 1500);
+            }, 3500);
+        }, 3500);
 
         userStates.set(userId, { onTrial: 1, subscribed: false })
     } /* else if (text === "quiero probarlo") {
