@@ -58,7 +58,7 @@ const checkUserCanInfere = async (user: User): Promise<subscriptionExceededMsg> 
 
     if (!data?.subscription) return { msg: "no subscription" };
     if (data.subscription && data.subscription !== 'free' && data.subscription !== 'unsubscribed') {
-        if (data.thisPeriodCountInferences == maxImgPerPeriod(data.subscription)) { // TODO
+        if (data.thisPeriodCountInferences >= maxImgPerPeriod(data.subscription)) { // TODO
             return { msg: "inferences number exceeded", subscription: data.subscription };
         } else if (false) {
             // Add logic to check whether user has the subscription up to date
