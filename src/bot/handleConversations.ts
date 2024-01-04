@@ -97,11 +97,13 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     if (userState.onTrial > 0 && "5491156928198" == extractPhoneNumber(userId)) {
         if (userState.onTrial == 1) {
 
-            makeTestInference(userId, text, socket)
+            await makeTestInference(userId, text, socket)
             // Send the first message immediately
             await socket.sendMessage(userId, { text: "¿Qué te pareció?" });
-            await socket.sendMessage(userId, { text: "Probemos una vez más, déjame hacerte una sugerencia, escribe..." + text });
-            await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" + text });
+            setTimeout(async () => {
+                await socket.sendMessage(userId, { text: "Probemos una vez más, déjame hacerte una sugerencia, escribe..." + text });
+                await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" + text });
+            }, 2500);
             userStates.set(userId, { onTrial: 2, subscribed: false })
         } else if (userState.onTrial == 2) {
             makeTestInference(userId, text, socket)
