@@ -98,7 +98,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
 
             await makeTestInference(userId, text, socket)
             // Send the first message immediately
-            await socket.sendMessage(userId, { text: "¿Qué te pareció?" });
+            // await socket.sendMessage(userId, { text: "¿Qué te pareció?" });
             setTimeout(async () => {
                 await socket.sendMessage(userId, { text: "Probemos una vez más, déjame hacerte una sugerencia, escribe..." + text });
                 await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" + text });
@@ -150,8 +150,14 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
         userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
     } else {
         subscribeUser(userId, 'free-trial')
-        await socket.sendMessage(userId, { text: "Hola! Es muy sencillo! Vos le escribís a este mismo chat, y en segundos obtienes una imagen generada de lo que pediste" });
-        await socket.sendMessage(userId, { text: "Hagamos una prueba... escribe perrito (o lo que desees)" })
+        setTimeout(async () => {
+            await socket.sendMessage(userId, { text: "Hola! Te cuento cómo funcion (¡es muy sencillo!)" });
+            await socket.sendMessage(userId, { text: "Vos le escribís a este mismo chat, y en segundos obtienes una imagen generada de lo que pediste" });
+            setTimeout(async () => {
+                await socket.sendMessage(userId, { text: "Hagamos una prueba... escribe perrito (o lo que desees)" })
+            }, 1500);
+        }, 1500);
+
         userStates.set(userId, { onTrial: 1, subscribed: false })
     } /* else if (text === "quiero probarlo") {
         subscribeUser(userId, 'free-trial')
