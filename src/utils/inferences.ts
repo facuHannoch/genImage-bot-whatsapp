@@ -29,6 +29,10 @@ function maxImgPerPeriod(subscription): number {
             return 300
         case 'bot-full':
             return 800
+        case 'bot-imgs-batch':
+            return 200
+        default:
+            return 200
     }
 }
 

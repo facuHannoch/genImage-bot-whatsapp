@@ -93,7 +93,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             : msg.message.extendedTextMessage?.text
 
 
-    if (userState.onTrial > 0 && "5491156928198" == extractPhoneNumber(userId)) {
+    if (userState.onTrial > 0/*  && "5491156928198" == extractPhoneNumber(userId) */) {
         if (userState.onTrial == 1) {
 
             await makeTestInference(userId, text, socket)
@@ -101,12 +101,17 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             // await socket.sendMessage(userId, { text: "¿Qué te pareció?" });
             setTimeout(async () => {
                 await socket.sendMessage(userId, { text: "Probemos una vez más, déjame hacerte una sugerencia, escribe..." + text });
-                await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" + text });
-            }, 2500);
+                setTimeout(async () => {
+                    await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" + text });
+                }, 2000);
+            }, 7000);
             userStates.set(userId, { onTrial: 2, subscribed: false })
         } else if (userState.onTrial == 2) {
             makeTestInference(userId, text, socket)
-            // await socket.sendMessage(userId, { text: "Te hemos regalado estas imágenes, pero nos es costoso hacerlas." });
+            await socket.sendMessage(userId, { text: "¿Ahí tienes, hacer esas imágenes no fue gratis, pero son un regalo para vos!" });
+            userStates.set(userId, { onTrial: 0, subscribed: false })
+        } else if (userState.onTrial == 3) {
+
         }
         return
     }
@@ -129,6 +134,9 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     } */
     userState = userStates.get(userId) || userState
 
+    const susbscribePattern = /sub?scribir((se)|(me))?/i
+    const subscribeFullPattern = /sub?scribir((se)|(me))?/i
+
     if (userState.subscribed) {
         if (text === "-unsubscribe") {
             userStates.set(userId, { aboutToUnsubscribe: true, subscribed: true })
@@ -141,12 +149,14 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
             return
         }
-    } else if (text === "subscribirse" || text === "Subscribirse" || text === "subscribir" || text === "Subscribir" || text === "suscribirse" || text === "Suscribirse" || text === "suscribir" || text === "Suscribir") {
-        // await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
-        // socket.sendMessage(userId, { image: { url: "src/media/img.jpg" } });
-        // await socket.sendMessage(userId, { text: "Genera y usa como quieras más de 300 imágenes, por un período de prueba de 5 días de $2970" })
+    } else if (susbscribePattern.test(text)) {
         await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-trial') });
-        // await socket.sendMessage(userId, { text: "Si ya has hecho un pago, introduce el id de la transacción para que verifiquemos y empieces a generar" });
+        userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
+    } else if (text === "suscribirse paquete imágenes") {
+        await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-imgs-batch') });
+        userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
+    } else if (subscribeFullPattern.test(text)) {
+        await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-imgs-batch') });
         userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
     } else {
         subscribeUser(userId, 'free-trial')
@@ -154,7 +164,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             await socket.sendMessage(userId, { text: "Hola! Te cuento cómo funcion (¡es muy sencillo!)" });
             await socket.sendMessage(userId, { text: "Vos le escribís a este mismo chat, y en segundos obtienes una imagen generada de lo que pediste" });
             setTimeout(async () => {
-                await socket.sendMessage(userId, { text: "Hagamos una prueba... escribe perrito (o lo que desees)" })
+                await socket.sendMessage(userId, { text: "Hagamos una prueba... escribe \"perrito\" (o lo que desees)" })
             }, 1500);
         }, 1500);
 

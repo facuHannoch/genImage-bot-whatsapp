@@ -90,11 +90,37 @@ app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
             "unit_price": 2970
         }
     ]
-    // switch (subscription) {
-    //     case 'subscription':
-    //         items = []
-    //         break;
-    // }
+    switch (subscription) {
+        case 'bot-trial':
+            items = [{
+                "title": "Período de prueba bot WhatsApp",
+                "description": "Período de prueba",
+                "quantity": 1,
+                "currency_id": "ARG",
+                "unit_price": 2970
+            }]
+            break;
+        case 'bot-full':
+            items = [{
+                "title": "Período de prueba bot WhatsApp",
+                "description": "Período de prueba",
+                "quantity": 1,
+                "currency_id": "ARG",
+                "unit_price": 2970
+            }]
+            break;
+        case 'bot-imgs-batch':
+            items = [{
+                "title": "Paquete 200 imágenes personalizadas",
+                "description": "",
+                "quantity": 1,
+                "currency_id": "ARG",
+                "unit_price": 1900
+            }]
+            break;
+        default:
+            break;
+    }
 
     let preference = {
         metadata: {
