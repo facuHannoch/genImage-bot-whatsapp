@@ -132,6 +132,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
 
         return
     }
+    userState = userStates.get(userId) || userState
 
     if (userState.subscribed) {
         if (text === "-unsubscribe") {
