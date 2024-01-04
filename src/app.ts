@@ -2,7 +2,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import startSock from './bot/startBot';
 import { AnyMessageContent, AnyRegularMessageContent, PollMessageOptions, WASocket, proto } from '@whiskeysockets/baileys';
 import { FirebaseOptions, initializeApp } from "firebase/app";
-import { Inference, extractPhoneNumber, subscribeUser } from './utils/utils';
+import { Inference } from './utils/utils';
 import multer from 'multer';
 
 import fs from 'fs';
@@ -27,6 +27,7 @@ const initBot = async () => {
 
 // Firebase admin Condfig
 import admin from 'firebase-admin';
+import { extractPhoneNumber, subscribeUser } from './utils/user';
 var serviceAccount = require("../serviceAccountKey.json");
 
 admin.initializeApp({
