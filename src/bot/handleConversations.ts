@@ -66,6 +66,18 @@ const processRequest = async (userId: string, requestData: string, socket: WASoc
         requestQueue.delete(userId);
     }
 };
+async function makeTestInference(userId: string, requestData: string, socket: WASocket) {
+    const inferencePromise = doSingleTextInference(userId, requestData);
+    await socket.sendMessage(userId, { text: "Generando imagen de " + requestData });
+
+    inferencePromise.then(async inference => {
+        await triggerWebhookForSingleInference(inference);
+    }).catch(async error => {
+        console.error(error);
+        await socket.sendMessage(userId, { text: "Disculpa, hubo un error" });
+    })
+
+}
 
 
 
@@ -84,23 +96,16 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
 
     if (userState.onTrial > 0 && "5491156928198" == extractPhoneNumber(userId)) {
         if (userState.onTrial == 1) {
-            const inferencePromise = doSingleTextInference(userId, text);
 
+            makeTestInference(userId, text, socket)
             // Send the first message immediately
-            await socket.sendMessage(userId, { text: "Generando imagen de " + text });
-
-            inferencePromise.then(async inference => {
-                await triggerWebhookForSingleInference(inference);
-            }).catch(async error => {
-                console.error(error);
-                await socket.sendMessage(userId, { text: "Disculpa, hubo un error" });
-            })
             await socket.sendMessage(userId, { text: "¿Qué te pareció?" });
-            // await socket.sendMessage(userId, { text: "Puedes obtener una subscripción, o hacer un pago único" });
+            await socket.sendMessage(userId, { text: "Probemos una vez más, déjame hacerte una sugerencia, escribe..." + text });
+            await socket.sendMessage(userId, { text: "cachorro hermoso, adorable. meteors" + text });
             userStates.set(userId, { onTrial: 2, subscribed: false })
         } else if (userState.onTrial == 2) {
-            // await socket.sendMessage(userId, { text: "Generando imagen de " + text });
-
+            makeTestInference(userId, text, socket)
+            // await socket.sendMessage(userId, { text: "Te hemos regalado estas imágenes, pero nos es costoso hacerlas." });
         }
         return
     }
