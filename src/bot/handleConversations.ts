@@ -108,14 +108,14 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             // await putUserInferencesOnPool(userId, text);
             await processRequest(userId, text, socket)
         }
-    } /* else {
-        await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
+    } else if (text === "susbscribirse") {
+        // await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
         // socket.sendMessage(userId, { image: { url: "src/media/img.jpg" } });
-        await socket.sendMessage(userId, { text: "Genera y usa como quieras más de 300 imágenes, por un período de prueba de 5 días de $2970" })
+        // await socket.sendMessage(userId, { text: "Genera y usa como quieras más de 300 imágenes, por un período de prueba de 5 días de $2970" })
         await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-trial') });
         // await socket.sendMessage(userId, { text: "Si ya has hecho un pago, introduce el id de la transacción para que verifiquemos y empieces a generar" });
         userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
-    } */
+    }
 }
 
 export default handleConversation
@@ -129,7 +129,7 @@ function extractTransactionId(msg): string[] | [] {
 function createPaymentLink(user: User, subscription: string) {
     const encodedPhone = Buffer.from(user).toString('base64');
     const doubleEncodedPhone = Buffer.from(encodedPhone).toString('base64');
-    const url = `${process.env.PAYMENT_PAGE_URL}/index.html?p=${doubleEncodedPhone}`;
+    const url = `${process.env.PAYMENT_PAGE_URL}/index.html?p=${doubleEncodedPhone}?stype=${subscription}`;
 
     return url
 }
