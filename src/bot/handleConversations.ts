@@ -109,7 +109,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
             return
         }
-    } else if (text === "susbscribirse") {
+    } else if (text === "subscribirse") {
         // await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
         // socket.sendMessage(userId, { image: { url: "src/media/img.jpg" } });
         // await socket.sendMessage(userId, { text: "Genera y usa como quieras más de 300 imágenes, por un período de prueba de 5 días de $2970" })
