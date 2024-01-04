@@ -122,15 +122,15 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
         }
 
         const susbscribePattern = /sub?scribir((se)|(me))?/i
-        const subscribeFullPattern = /sub?scribir((se)|(me))?/i
+        const subscribeFullPattern = /sub?scribir((se)|(me))?.*(mes|mensual|full)/i
         let subscriptionType: string = ''
 
-        if (susbscribePattern.test(text)) {
-            subscriptionType = 'bot-trial'
-        } else if (text === "suscribirse paquete imágenes") {
+        if (text === "suscribirse paquete imágenes") {
             subscriptionType = 'bot-imgs-batch'
         } else if (subscribeFullPattern.test(text)) {
             subscriptionType = 'bot-full'
+        } else if (susbscribePattern.test(text)) {
+            subscriptionType = 'bot-trial'
         }
 
         if (subscriptionType !== '') {
