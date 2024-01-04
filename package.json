@@ -1,6 +1,6 @@
 {
   "name": "wp",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "",
   "main": "src/app.ts",
   "scripts": {
