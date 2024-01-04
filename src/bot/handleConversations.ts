@@ -93,13 +93,12 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
             ? msg.message.conversation
             : msg.message.extendedTextMessage?.text
 
-    global.logger.warn(userState)
     console.log("userState")
     console.log(userState)
     console.log("userState")
 
 
-    if (userState.onTrial > 0 && userState.subscription === 'free-trial') {
+    if (userState.onTrial > 0 || userState.subscription === 'free-trial') {
         if (!text) {
             // socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
             return
@@ -147,34 +146,29 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
     }
     userState = userStates.get(userId) || userState
 
-    if (userState.subscription && userState.subscription != 'free-trial') {
-        if (text === "-unsubscribe") {
-            userStates.set(userId, { aboutToUnsubscribe: true, subscription })
-            socket.sendMessage(userId, { text: "¿Quieres cancelar la subscripción?" });
-        } else {
-            // await putUserInferencesOnPool(userId, text);
-            await processRequest(userId, text, socket)
-        }
-        if (!text) {
-            socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
-            return
-        }
-    } else {
-        if (userState.aboutToUnsubscribe)
-            if (text === "si") {
-                // userStates.set(userId, { subscribed: true })
-                unsubscribeUser(userId);
-                socket.sendMessage(userId, { text: "Subscripción cancelada" });
-                return;
+    if (userState.subscription != 'free-trial') {
+        if (userState.subscription) {
+            if (text === "-unsubscribe") {
+                userStates.set(userId, { aboutToUnsubscribe: true, subscription })
+                socket.sendMessage(userId, { text: "¿Quieres cancelar la subscripción?" });
+            } else {
+                // await putUserInferencesOnPool(userId, text);
+                await processRequest(userId, text, socket)
             }
-    } /* else if (!userState.subscribed) {
-        const potentialTransactionIds = extractTransactionId(text)
-        const result = await verifyTransactionAndUpdateUser(userId, potentialTransactionIds, 'bot-trial') // TODO: This part
-        if (result === 0) {
-            socket.sendMessage(userId, { text: "Felicidades! Ya puedes empezar a generar imágenes" })
-            userStates.set(userId, { subscribed: true })
+            if (!text) {
+                socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
+                return
+            }
+        } else {
+            if (userState.aboutToUnsubscribe)
+                if (text === "si") {
+                    // userStates.set(userId, { subscribed: true })
+                    unsubscribeUser(userId);
+                    socket.sendMessage(userId, { text: "Subscripción cancelada" });
+                    return;
+                }
         }
-    } */
+    }
     userState = userStates.get(userId) || userState
 
     if (!userState.subscription) {
