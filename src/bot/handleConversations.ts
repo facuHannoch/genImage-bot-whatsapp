@@ -79,10 +79,6 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
         msg.message.conversation !== ''
             ? msg.message.conversation
             : msg.message.extendedTextMessage?.text
-    if (!text) {
-        socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
-        return
-    }
     if (userState.aboutToUnsubscribe) {
         if (text === "si") {
             // userStates.set(userId, { subscribed: true })
@@ -107,6 +103,10 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
         } else {
             // await putUserInferencesOnPool(userId, text);
             await processRequest(userId, text, socket)
+        }
+        if (!text) {
+            socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
+            return
         }
     } else if (text === "susbscribirse") {
         // await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
