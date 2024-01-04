@@ -100,7 +100,11 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
 
 
     if (userState.onTrial > 0 && userState.subscription === 'free-trial') {
-        
+        if (!text) {
+            socket.sendMessage(userId, { text: "Por ahora sólo podemos convertir texto en imágenes" });
+            return
+        }
+
         if (userState.onTrial == 1) {
 
             await makeTestInference(userId, text, socket)
