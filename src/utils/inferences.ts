@@ -24,7 +24,7 @@ interface VertexAIResponse {
 function maxImgPerPeriod(subscription): number {
     switch (subscription) {
         case 'free-trial':
-            return 3
+            return 1
         case 'bot-trial':
             return 300
         case 'bot-full':

@@ -1,5 +1,5 @@
 import { subscribeUser } from "./user";
-import { User } from "./utils";
+import { User } from "./inferences";
 
 const verifyTransactionAndUpdateUser = async (user: User, transactionIds: string[], subscription: string) => {
     let transactionFound = false;

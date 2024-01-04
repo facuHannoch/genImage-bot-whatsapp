@@ -2,7 +2,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import startSock from './bot/startBot';
 import { AnyMessageContent, AnyRegularMessageContent, PollMessageOptions, WASocket, proto } from '@whiskeysockets/baileys';
 import { FirebaseOptions, initializeApp } from "firebase/app";
-import { Inference } from './utils/utils';
+import { Inference } from './utils/inferences';
 import multer from 'multer';
 
 import fs from 'fs';

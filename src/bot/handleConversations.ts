@@ -1,6 +1,6 @@
 import { AnyMessageContent, WASocket, proto } from '@whiskeysockets/baileys';
-import { User, checkUserCanInfere, doSingleTextInference, putUserInferencesOnPool, triggerWebhookForSingleInference } from '../utils/utils';
-import { checkUserIsSubscribed, unsubscribeUser } from '../utils/user'
+import { User, checkUserCanInfere, doSingleTextInference, putUserInferencesOnPool, triggerWebhookForSingleInference } from '../utils/inferences';
+import { checkUserIsSubscribed, extractPhoneNumber, subscribeUser, unsubscribeUser } from '../utils/user'
 import { verifyTransactionAndUpdateUser } from '../utils/payments';
 global.aboutToUnsub = false;
 
@@ -9,6 +9,7 @@ interface UserState {
     aboutToUnsubscribe?: boolean,
     subscription?: string,
     subscribed: boolean,
+    onTrial?: number,
 }
 const requestQueue = new Map();
 const userStates = new Map<User, UserState>();
@@ -75,11 +76,36 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
         ...userStates.get(userId),
         subscribed: isSubscribed,
     }
-
     const text: string | undefined | null =
         msg.message.conversation !== ''
             ? msg.message.conversation
             : msg.message.extendedTextMessage?.text
+
+
+    if (userState.onTrial > 0 && "5491156928198" == extractPhoneNumber(userId)) {
+        if (userState.onTrial == 1) {
+            const inferencePromise = doSingleTextInference(userId, text);
+
+            // Send the first message immediately
+            await socket.sendMessage(userId, { text: "Generando imagen de " + text });
+
+            inferencePromise.then(async inference => {
+                await triggerWebhookForSingleInference(inference);
+            }).catch(async error => {
+                console.error(error);
+                await socket.sendMessage(userId, { text: "Disculpa, hubo un error" });
+            })
+            await socket.sendMessage(userId, { text: "¿Qué te pareció?" });
+            // await socket.sendMessage(userId, { text: "Puedes obtener una subscripción, o hacer un pago único" });
+            userStates.set(userId, { onTrial: 2, subscribed: false })
+        } else if (userState.onTrial == 2) {
+            // await socket.sendMessage(userId, { text: "Generando imagen de " + text });
+
+        }
+        return
+    }
+
+
     if (userState.aboutToUnsubscribe) {
         if (text === "si") {
             // userStates.set(userId, { subscribed: true })
@@ -116,7 +142,20 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
         await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-trial') });
         // await socket.sendMessage(userId, { text: "Si ya has hecho un pago, introduce el id de la transacción para que verifiquemos y empieces a generar" });
         userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
-    }
+    } else {
+        subscribeUser(userId, 'free-trial')
+        await socket.sendMessage(userId, { text: "Hola! Es muy sencillo! Vos le escribís a este mismo chat, y en segundos obtienes una imagen generada de lo que pediste" });
+        await socket.sendMessage(userId, { text: "Hagamos una prueba... escribe perrito (o lo que desees)" })
+        userStates.set(userId, { onTrial: 1, subscribed: false })
+    } /* else if (text === "quiero probarlo") {
+        subscribeUser(userId, 'free-trial')
+        // await socket.sendMessage(userId, { text: "Hola! parece que no estás subscripto" });
+        // socket.sendMessage(userId, { image: { url: "src/media/img.jpg" } });
+        // await socket.sendMessage(userId, { text: "Genera y usa como quieras más de 300 imágenes, por un período de prueba de 5 días de $2970" })
+        await socket.sendMessage(userId, { text: createPaymentLink(userId, 'bot-trial') });
+        // await socket.sendMessage(userId, { text: "Si ya has hecho un pago, introduce el id de la transacción para que verifiquemos y empieces a generar" });
+        userStates.set(userId, { aboutToSubscribe: true, subscribed: false })
+    } */
 }
 
 export default handleConversation

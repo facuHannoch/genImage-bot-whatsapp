@@ -1,4 +1,4 @@
-import { User } from "./utils";
+import { User } from "./inferences";
 
 /**
  * Adds the user details to the Firebase Firestore db, and sets the 'subscription' attribute to 'bot-trial'
