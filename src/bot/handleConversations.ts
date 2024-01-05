@@ -206,7 +206,7 @@ function extractTransactionId(msg): string[] | [] {
 function createPaymentLink(user: User, subscription: string) {
     const encodedPhone = Buffer.from(user).toString('base64');
     const doubleEncodedPhone = Buffer.from(encodedPhone).toString('base64');
-    const url = `${process.env.PAYMENT_PAGE_URL}/index.html?p=${doubleEncodedPhone}?stype=${subscription}`;
+    const url = `${process.env.PAYMENT_PAGE_URL}/index.html?p=${doubleEncodedPhone}&stype=${subscription}`;
 
     return url
 }
