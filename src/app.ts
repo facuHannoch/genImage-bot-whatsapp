@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
-import startSock from './bot/startBot';
+// import startSock from './bot/startBot';
 import { AnyMessageContent, AnyRegularMessageContent, PollMessageOptions, WASocket, proto } from '@whiskeysockets/baileys';
 import { FirebaseOptions, initializeApp } from "firebase/app";
 import { Inference } from './utils/inferences';
@@ -15,15 +15,20 @@ import P from 'pino';
 import dotenv from 'dotenv'
 dotenv.config()
 
+// const streams = [
+//     { stream: process.stdout },
+//     { stream: fs.createWriteStream('/logs/file.log', { flags: 'a' }) }
+// ]
+
 const logger = P({ timestamp: () => `,"|APP|time":"${new Date().toJSON()}"` })
 logger.level = 'info'
 global.logger = logger
 
-let sock: WASocket | null = null;
-const initBot = async () => {
-    startSock().then((sockInitiated) => sock = sockInitiated)
-    return 0;
-}
+// let sock: WASocket | null = null;
+// const initBot = async () => {
+//     startSock().then((sockInitiated) => sock = sockInitiated)
+//     return 0;
+// }
 
 // Firebase admin Condfig
 import admin from 'firebase-admin';
@@ -80,6 +85,21 @@ function checkRequestIPAndURL(req: Request, res: Response, next: NextFunction) {
 app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
     const { subscription, id } = req.body // id is user id, which is the phone number
     logger.info(req.body)
+
+    // payment request logging
+    // try {
+    //     // Log the payment request to a file
+    //     fs.appendFile('payment-requests.log', JSON.stringify(req) + '\n', (err) => {
+    //         if (err) {
+    //             console.error('Error logging payment request:', err);
+    //         } else {
+    //             console.log('Payment request logged successfully.');
+    //         }
+    //     });
+
+    // } catch (e) {
+    //     logger.warn("Error while trying to log")
+    // }
 
     let items = [
         {
@@ -152,7 +172,7 @@ app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
         });
 })
 
-app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
+/* app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
     try {
         const inferences = JSON.parse(req.body.inferences);
         // console.log('List of inferences:', inferences);
@@ -193,7 +213,7 @@ app.post('/batch-processing-done', upload.single('image'), async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-
+ */
 app.post('/payment-received', async (req, res) => {
     const transactionId = req.body.transaction_id;
     logger.info(`Payment received ${transactionId}`)
@@ -234,7 +254,8 @@ app.post('/payment-received', async (req, res) => {
             userId: extractPhoneNumber(user_id)
         })
 
-        sock.sendMessage(user_id, { text: "Felicidades! Ya puedes empezar a generar imágenes" })
+        // if (sock)
+        //     sock.sendMessage(user_id, { text: "Felicidades! Ya puedes empezar a generar imágenes" })
 
         res.status(201).send("Success")
     } else {
@@ -261,4 +282,4 @@ const PORT = 3000;
 app.listen(PORT, () => {
     return logger.info(`Server running on port ${PORT}`);
 });
-initBot().then((result) => logger.info("Bot initiated"))
+// initBot().then((result) => logger.info("Bot initiated"))
