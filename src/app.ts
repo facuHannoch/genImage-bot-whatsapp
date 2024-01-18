@@ -255,21 +255,29 @@ app.post('/mp-payment-received', async (req, res) => {
             logger.error(error);
         });
 
-    const { wp_id = null, subscription, user_ref = null, email = null } = metadata
+    const user = metadata.user
+    const wp_id = metadata.wp_id
+    const subscription = metadata.subscription
+
     const sub = subscription ?? 'bot-trial'
 
-    const id: string = user_ref ?? wp_id
+    let id: string = user.user_ref ?? wp_id
 
+    let phoneNumber = null
+    if (wp_id) {
+        phoneNumber = extractPhoneNumber(wp_id)
+        id = phoneNumber
+    }
     if (id) {
         try {
-            subscribeUser(sub, user_ref, email, extractPhoneNumber(wp_id))
+            subscribeUser(sub, user.user_ref, user.email, phoneNumber)
         } catch (error) {
             logger.error(`Error on trying to create user ${error}`)
         }
         logger.info(`${id} was successfully subscribed to ${sub}`)
         saveTransactionData({
             ...transactionData,
-            userId: extractPhoneNumber(wp_id)
+            userId: id
         })
 
         // if (sock)
