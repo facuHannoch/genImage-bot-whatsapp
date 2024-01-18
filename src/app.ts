@@ -230,6 +230,15 @@ app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
     }
 });
  */
+
+interface MPResponse {
+    wp_id: string | undefined;
+    user: {
+        email: string;
+        user_id: string
+    };
+    subscription: string;
+}
 app.post('/mp-payment-received', async (req, res) => {
     const transactionId = req.body.transaction_id;
     logger.info(`Payment received ${transactionId}`)
@@ -240,11 +249,11 @@ app.post('/mp-payment-received', async (req, res) => {
         date: admin.firestore.Timestamp.fromDate(new Date()),
     }
 
-    const { metadata } = await fetch(`https://api.mercadopago.com/v1/payments/${transactionId}`, {
+    const { metadata }: { metadata: MPResponse } = await fetch(`https://api.mercadopago.com/v1/payments/${transactionId}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.MP_ACCESS_TOKEN_PROD}`
+            "Authorization": `Bearer ${process.env.MP_ACCESS_TOKEN_TEST}`
         },
     })
         .then(response => response.json())
@@ -261,7 +270,7 @@ app.post('/mp-payment-received', async (req, res) => {
 
     const sub = subscription ?? 'bot-trial'
 
-    let id: string = user.user_ref ?? wp_id
+    let id: string = user.user_id ?? wp_id
 
     let phoneNumber = null
     if (wp_id) {
@@ -270,7 +279,7 @@ app.post('/mp-payment-received', async (req, res) => {
     }
     if (id) {
         try {
-            subscribeUser(sub, user.user_ref, user.email, phoneNumber)
+            subscribeUser(sub, user.user_id, user.email, phoneNumber)
         } catch (error) {
             logger.error(`Error on trying to create user ${error}`)
         }
