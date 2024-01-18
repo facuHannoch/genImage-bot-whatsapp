@@ -255,7 +255,7 @@ app.post('/mp-payment-received', async (req, res) => {
             logger.error(error);
         });
 
-    const { wp_id, subscription, user_ref, email } = metadata
+    const { wp_id = null, subscription, user_ref = null, email = null } = metadata
     const sub = subscription ?? 'bot-trial'
 
     const id: string = user_ref ?? wp_id
