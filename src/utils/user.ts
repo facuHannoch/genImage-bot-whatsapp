@@ -4,10 +4,13 @@ import { User } from "./inferences";
  * Adds the user details to the Firebase Firestore db, and sets the 'subscription' attribute to 'bot-trial'
  * @param user 
  */
-export const subscribeUser = async (user: User, subscriptionType: string) => {
-    const userRef = global.db.collection("users").doc();
+export const subscribeUser = async (subscriptionType: string, id: string, email: string, phoneNumber: string) => {
+    const userRef = id ? global.db.collection("users").doc(id) : global.db.collection("users").doc();
     await userRef.set({
-        phoneNumber: extractPhoneNumber(user),
+        id,
+        phoneNumber,
+        email,
+        images: [],
         subscription: subscriptionType,
         thisPeriodCountInferences: 0,
     }, { merge: true });

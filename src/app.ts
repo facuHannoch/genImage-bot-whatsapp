@@ -138,13 +138,29 @@ app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
                 "unit_price": 1900
             }]
             break;
+        case 'week-trial':
+            items = [{
+                "title": "Paquete 200 imágenes personalizadas",
+                "description": "",
+                "quantity": 1,
+                "currency_id": "USD",
+                "unit_price": 3
+            }]
+        case 'monthly-basic':
+            items = [{
+                "title": "Paquete 200 imágenes personalizadas",
+                "description": "",
+                "quantity": 1,
+                "currency_id": "USD",
+                "unit_price": 3
+            }]
         default:
             break;
     }
 
     let preference = {
         metadata: {
-            user_id: id,
+            wp_id: id,
             subscription: subscription,
         },
         items: items,
@@ -214,7 +230,7 @@ app.post('/get-payment-details', checkRequestIPAndURL, async (req, res) => {
     }
 });
  */
-app.post('/payment-received', async (req, res) => {
+app.post('/mp-payment-received', async (req, res) => {
     const transactionId = req.body.transaction_id;
     logger.info(`Payment received ${transactionId}`)
 
@@ -239,19 +255,21 @@ app.post('/payment-received', async (req, res) => {
             logger.error(error);
         });
 
-    const { user_id, subscription } = metadata
+    const { wp_id, subscription, user_ref, email } = metadata
     const sub = subscription ?? 'bot-trial'
 
-    if (user_id) {
+    const id: string = user_ref ?? wp_id
+
+    if (id) {
         try {
-            subscribeUser(user_id, sub)
+            subscribeUser(sub, user_ref, email, extractPhoneNumber(wp_id))
         } catch (error) {
             logger.error(`Error on trying to create user ${error}`)
         }
-        logger.info(`${user_id} was successfully subscribed to ${sub}`)
+        logger.info(`${id} was successfully subscribed to ${sub}`)
         saveTransactionData({
             ...transactionData,
-            userId: extractPhoneNumber(user_id)
+            userId: extractPhoneNumber(wp_id)
         })
 
         // if (sock)
@@ -262,7 +280,7 @@ app.post('/payment-received', async (req, res) => {
         saveTransactionData(transactionData)
 
         logger.error(`User undefined`)
-        logger.error(user_id)
+        logger.error(id)
         logger.error(sub)
 
         res.status(500).send("Error")
