@@ -1,4 +1,4 @@
-import { subscribeUser } from "./user";
+import { subscribeUserWithWpID } from "./user";
 import { User } from "./inferences";
 
 const verifyTransactionAndUpdateUser = async (user: User, transactionIds: string[], subscription: string) => {
@@ -18,7 +18,7 @@ const verifyTransactionAndUpdateUser = async (user: User, transactionIds: string
     if (!transactionFound) {
         return -1; // Transaction not found
     } else {
-        await subscribeUser(user, subscription);
+        await subscribeUserWithWpID(user, subscription);
         return 0; // User subscription updated
     }
 };

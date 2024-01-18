@@ -15,6 +15,16 @@ export const subscribeUser = async (subscriptionType: string, id: string, email:
         thisPeriodCountInferences: 0,
     }, { merge: true });
 }
+
+export const subscribeUserWithWpID = async (user: User, subscriptionType: string) => {
+    const userRef = global.db.collection("users").doc();
+    await userRef.set({
+        phoneNumber: extractPhoneNumber(user),
+        subscription: subscriptionType,
+        thisPeriodCountInferences: 0,
+    }, { merge: true });
+}
+
 /**
  * Modifies the specific user details, changing the 'subscription' attribute to 'unsubscribed'
  * Should keep the rest of the subscription period, until next billing

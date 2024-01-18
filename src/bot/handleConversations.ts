@@ -1,7 +1,6 @@
 import { AnyMessageContent, WASocket, proto } from '@whiskeysockets/baileys';
 import { User, checkUserCanInfere, doSingleTextInference, putUserInferencesOnPool, triggerWebhookForSingleInference } from '../utils/inferences';
-import { checkUserIsSubscribed, extractPhoneNumber, subscribeUser, unsubscribeUser } from '../utils/user'
-import { verifyTransactionAndUpdateUser } from '../utils/payments';
+import { checkUserIsSubscribed, subscribeUserWithWpID, unsubscribeUser } from '../utils/user'
 global.aboutToUnsub = false;
 
 interface UserState {
@@ -172,7 +171,7 @@ const handleConversation = async (socket: WASocket, msg: proto.IWebMessageInfo) 
 
     // When the user is not subscribed (first touch with the app)
     if (!userState.subscription) {
-        subscribeUser(userId, 'free-trial')
+        subscribeUserWithWpID(userId, 'free-trial')
         setTimeout(async () => {
             await socket.sendMessage(userId, { text: "Hola! Te cuento cómo funciona (¡es muy sencillo!)" });
             setTimeout(async () => {
