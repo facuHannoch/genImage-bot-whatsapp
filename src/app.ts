@@ -253,7 +253,7 @@ app.post('/mp-payment-received', async (req, res) => {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.MP_ACCESS_TOKEN_TEST}`
+            "Authorization": `Bearer ${process.env.PAYMENTS_ENV == 'prod' ? process.env.MP_ACCESS_TOKEN_PROD : process.env.MP_ACCESS_TOKEN_TEST}`
         },
     })
         .then(response => response.json())
